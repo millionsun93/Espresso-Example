@@ -1,0 +1,781 @@
+<!doctype html>
+
+
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#4F7DC9">
+    <meta charset="UTF-8">
+    <title>Android Testing Codelab</title>
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="elements/codelab.html">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+        }
+    </style>
+
+</head>
+
+<body unresolved class="fullbleed">
+
+    <google-codelab title="Android Testing Codelab" environment="web" feedback-link="https://github.com/googlecodelabs/android-testing">
+        <google-codelab-step label="Writing UI tests with Espresso" duration="25">
+            <p><strong>Continue with your existing Android Studio project for this section.</strong>
+            </p>
+            <aside class="special">
+                <p><strong>If you would like to start fresh for this section, continue from snapshot ‘step-7&#39;:<br></strong>Open the directory named <strong>step-7</strong> from <a href="https://github.com/googlecodelabs/android-testing/raw/master/android-testing-checkpoints.zip"
+                        target="_blank">the zip file</a> in Android Studio or checkout the branch <code>step-7</code> directly from github:
+                    <br><code>git clone https://github.com/googlecodelabs/android-testing.git -b step-7</code>
+                </p>
+            </aside>
+            <p>Next, let&#39;s implement the user interface. We&#39;ll be following a similar approach as before. First we&#39;ll define the tests that verify how we expect the UI to behave, then the implementation follows from there.</p>
+            <h2>UI Testing on Android with Espresso</h2>
+            <p>The Android Testing Support Library contains the Espresso testing framework that provides APIs to simulate user interactions. Espresso has a very nice fluent, concise and readable Api to write functional UI tests and was built to make UI testing
+                as frictionless as possible. This means that you can focus on writing tests without having to deal with unreliable and flaky tests.</p>
+            <p>Although there is support for running instrumentation tests in the Android framework, current development efforts are focused around the new AndroidJUnitRunner which is released as part of the Android Testing Support Library.</p>
+            <h2>Set up Espresso and AndroidJUnitRunner</h2>
+            <p><strong>We have already set up the build dependencies for you</strong>, so there is no need to update our build configuration<strong>.<br></strong>If you are adding Espresso to your own project you need to add the AndroidJUnitRunner and Espresso
+                framework from the Android Testing Support Library to your <code>build.gradle</code>:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/build.gradle#L54" target="_blank">app/build.gradle</a></h3>
+            <pre><code>// Android Testing Support Library&#39;s runner and rules
+androidTestCompile &#34;com.android.support.test:runner:$rootProject.ext.runnerVersion&#34;
+androidTestCompile &#34;com.android.support.test:rules:$rootProject.ext.rulesVersion&#34;
+
+// Espresso UI Testing dependencies.
+androidTestCompile &#34;com.android.support.test.espresso:espresso-core:$rootProject.ext.espressoVersion&#34;
+androidTestCompile &#34;com.android.support.test.espresso:espresso-contrib:$rootProject.ext.espressoVersion&#34;
+</code></pre>
+            <h2>Set up Android Studio for Android instrumentation tests</h2>
+            <p>Unlike local unit tests, instrumentation tests must be placed in the <code>androidTest</code> source set (<code>app/src/androidTest/java/...</code>). Don&#39;t worry - we have already created the directory and files up for you.</p>
+            <p>Just to recap our project structure, we have three <em>build variants</em> for our app: </p>
+            <table>
+                <tr>
+                    <td colspan="1" rowspan="1">
+                        <p><code>mockDebug</code>
+                        </p>
+                    </td>
+                    <td colspan="1" rowspan="1">
+                        <p>Uses the <code>mock</code> <em>source set </em>to inject a mock data repository where notes are stored</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="1" rowspan="1">
+                        <p><code>prodDebug</code>
+                        </p>
+                    </td>
+                    <td colspan="1" rowspan="1">
+                        <p><code>Debug</code> build that uses the <code>prod</code> <em>source set</em> to inject the ‘real&#39; production data repository</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="1" rowspan="1">
+                        <p><code>prodRelease</code>
+                        </p>
+                    </td>
+                    <td colspan="1" rowspan="1">
+                        <p>Signed <code>Release</code> build that uses a ‘real&#39; data repository</p>
+                    </td>
+                </tr>
+            </table>
+            <p>The first test we are writing is using the <strong><code>prodDebug</code></strong> variant - make sure to select it for our test artifact before continuing. (Different tests and directories are activated based on the variant you have selected!)
+            </p>
+            <p>
+                <img style="max-width: 480.50px" src="img/7d867483dc450c86.png">
+            </p>
+            <h2>Set up your device for Espresso tests</h2>
+            <p>For this section of the codelab you will need a physical device or Android emulator, because we will be implementing the user interface.</p>
+            <aside class="warning">
+                <p>You need to <strong>turn off animations</strong> on your test device (or emulator), otherwise Espresso may not work as expected and your tests may fail. Turn off animations from <em>Settings</em> by opening <em>Developer Options</em> and
+                    turning all the following options under &#34;<em>Drawing</em>&#34; off:</p>
+                <ul>
+                    <li>Window animation scale</li>
+                    <li>Transition animation scale</li>
+                    <li>Animator duration scale</li>
+                </ul>
+            </aside>
+            <h2>Espresso Test 1: Opening the ‘Add Note&#39; screen</h2>
+            <p>Espresso can also perform user interactions (<a href="http://developer.android.com/reference/android/support/test/espresso/action/ViewActions.html" target="_blank"><code>ViewActions</code></a>) on a view, for example clicks and touches.</p>
+            <p>One of the key interactions in the app is <strong>clicking the floating action button to open the &#34;add note&#34; screen</strong>.</p>
+            <p>
+                <img style="max-width: 335.08px" src="img/96bf3222a3a23c5f.png">
+            </p>
+            <p>We will implement a test that opens the app, clicks that button and verifies that the correct screen is being displayed.</p>
+            <p><strong>Edit the file </strong><code>app/src/androidTest/java/.../notes/NotesScreenTest.java</code> and comment in the method
+                <code>clickAddNoteButton_opensAddNoteUi()</code> as you work through this section:</p>
+            <p>First, we need to find the floating action button in the view hierarchy (which we can identify by its ID <code>R.id.fab_notes</code>) and click it. Then we check that the &#34;add note&#34; screen has been shown, we can easily do this by checking
+                that the title of the screen (identified by its ID <code>R.id.add_note_title</code>) is being displayed:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/NotesScreenTest.java" target="_blank">androidTest/.../NotesScreenTest.java</a></h3>
+            <pre><code>@Test
+public void clickAddNoteButton_opensAddNoteUi() throws Exception {
+   // Click on the add note button
+   onView(withId(R.id.fab_add_notes)).perform(click());
+
+   // Check if the add note screen is displayed
+   onView(withId(R.id.add_note_title)).check(matches(isDisplayed()));
+}</code></pre>
+            <p>Note that we do not have to wait for the add note screen to be displayed. This is the power of Espresso - it automatically waits for the UI thread to be idle before running any further check. There is no need to implement these waits and delays
+                yourself.
+            </p>
+            <h2>Running Espresso tests</h2>
+            <p>Now that we have written our first test, it&#39;s time to run it!</p>
+            <aside class="warning">
+                <p>See the <strong>Troubleshooting section</strong> at the end if you have trouble running this test. (You may need to uninstall the previous build first - run the <code>uninstallAll</code> gradle task.)</p>
+            </aside>
+            <p><strong>Right click</strong> on the class that where we have just implemented our test (<code>androidTest/java/.../notes/NotesScreenTest.java</code>) then select &#34;<strong>Run NotesScreenTest ...</strong>&#34;. If you are not seeing this
+                option, make sure you have switched to the <strong>Android Instrumentation Tests</strong> Build Variant (see above).</p>
+            <p>
+                <img style="max-width: 624.00px" src="img/878432f526e72387.png">
+            </p>
+            <p>This approach works well if you are working on just a single test class, but doesn&#39;t scale if you want to run many different tests at the same time.</p>
+            <p>Let&#39;s set up a <em>build configuration</em> that will run all of our unit tests together</p>
+            <p>Fortunately, Android Studio makes this very easy! Just <strong>right click</strong> on the package name under <strong><code>androidTest</code></strong><code>/java/com.example.android.testing.notes</code> and select &#34;<strong>Create ‘Tests in com.exampl...&#39;&#34;</strong>.
+            </p>
+            <p>
+                <img style="max-width: 624.00px" src="img/a088986ce45d331d.png">
+            </p>
+            <p>In the next dialog we can configure our new build configuration (such as excluding tests or selecting a target device), but for now the <strong>default options</strong> are just fine.</p>
+            <p>Select our new run configuration from the run configuration menu, then select <strong>run</strong>:</p>
+            <p>
+                <img style="max-width: 313.00px" src="img/fe16736c6802abb1.png">
+            </p>
+            <p><strong>Keep an eye on your device - you can see Espresso execute our tests!</strong>
+            </p>
+            <p>We will have a few failing tests for now - that&#39;s what we will be implementing in the rest of the codelab!</p>
+            <p>Their status is displayed in the <strong>Run</strong> Panel that opened at the bottom of the screen:</p>
+            <p>
+                <img style="max-width: 510.00px" src="img/391e5d4c2d01e584.png">
+            </p>
+            <h3>ActivityTestRule: Functional testing for Android Activities</h3>
+            <p>The Android Testing Support Library <a href="https://google.github.io/android-testing-support-library/docs/rules/index.html" target="_blank">includes two JUnit Rules</a> that make it easy to write functional tests for <strong>Android Activities and Services</strong>.
+            </p>
+            <aside class="special">
+                <p>If you have used Android <code>TestCase</code>s (like <code>ActivityInstrumentationTestCase2</code> or <code>ServiceTestCase</code>) in the past, these have been deprecated. Instead you should switch to the new <code>ActivityTestRule</code>                    and <code>ServiceTestRule</code>.
+                </p>
+            </aside>
+            <p><a href="http://junit.org/apidocs/org/junit/rules/TestRule.html" target="_blank">JUnit test rules</a> allow the alteration of test methods. It is run before any test is executed and can be shared between projects and classes. </p>
+            <p>The <code>ActivityTestRule</code> is a rule that provides functional testing of a single Activity. The annotated Activity will be launched before each annotated <code>@Test</code> and before any annotated <code>@Before</code> methods. The
+                Activity is automatically terminated after the test is completed and all <code>@After</code> methods are finished.</p>
+            <h3>View Matching and Assertions with Espresso</h3>
+            <p>Espresso tests are written based on what a user might do while interacting with your app. The key concepts are locating and interacting with UI elements. The first step is to find a View you are interested in, then check its state or interact
+                with it.</p>
+            <p><a href="http://developer.android.com/reference/android/support/test/espresso/matcher/ViewMatchers.html" target="_blank"><code>ViewMatcher</code></a>s select Views in the current view hierarchy. The most common ones are <code>withId(...)</code>                (that finds Views with a specific ID) and <code>withText(...)</code> (that finds Views with a specific text), but there are many others, including matchers for state (selected, focused, enabled), content description and hierarchy (root
+                and children), <a href="http://developer.android.com/reference/android/support/test/espresso/matcher/ViewMatchers.html" target="_blank">among others</a>.</p>
+            <p><a href="http://developer.android.com/reference/android/support/test/espresso/action/ViewActions.html" target="_blank"><code>ViewAction</code></a>s are actions that can be performed on a View (for example click).</p>
+            <p><a href="http://developer.android.com/reference/android/support/test/espresso/assertion/ViewAssertions.html" target="_blank"><code>ViewAssertion</code></a>s are passed to the <code>check(...)</code> ViewAction to verify its state.</p>
+            <h2>Espresso Test 2: Adding a note</h2>
+            <p><strong>Continue editing the file </strong><code>app/src/androidTest/java/.../notes/NotesScreenTest.java</code> and comment in the code as you work through this section:</p>
+            <p>Let&#39;s go ahead and implement our first Espresso test from scratch: <code>addNoteToNotesList()</code>.</p>
+            <p>This test will open the ‘Add Note&#39; screen, enter some text, click the save button and verify that the text has been displayed.</p>
+            <p>First, make sure that the test has been set up, remove the <code>fail(...)</code> call and add some test data we will be checking:
+            </p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/NotesScreenTest.java" target="_blank">androidTest/.../NotesScreenTest.java</a></h3>
+            <pre><code>@Test
+public void addNoteToNotesList() throws Exception {
+    String newNoteTitle = &#34;Espresso&#34;;
+    String newNoteDescription = &#34;UI testing for Android&#34;;
+    ...
+}</code></pre>
+            <p>Similar to the previous Espresso test we looked at, we will first <strong>find the floating action button </strong>(<code>R.id.fab_add_notes</code>) and <strong>click</strong> it:</p>
+            <pre><code>// Click on the add note button
+onView(withId(R.id.fab_add_notes)).perform(click());</code></pre>
+            <p>Next (once the &#34;add note screen&#34; is open) we will <strong>enter our note text </strong>and <strong>save the note</strong>. (We don&#39;t need to wait for the new screen to open - Espresso will do this automatically for us. It waits
+                until a View with the id <code>R.id.fab_add_notes</code> can be found.)</p>
+            <pre><code>// Add note title and description
+onView(withId(R.id.add_note_title)).perform(typeText(newNoteTitle), closeSoftKeyboard()); // Type new note title
+onView(withId(R.id.add_note_description)).perform(typeText(newNoteDescription),
+       closeSoftKeyboard()); // Type new note description and close the keyboard
+
+// Save the note
+onView(withId(R.id.fab_add_notes)).perform(click());
+</code></pre>
+            <p>Next we are back on the &#34;Notes list screen&#34;. We will ask Espresso to scroll the RecyclerView until it can find a note in the list that contains our description and verify that it is in fact displayed on the screen:</p>
+            <aside class="special">
+                <p>Espresso has out-of-the-box support for most support and design support library features! This makes it very convenient for you to use Espresso with APIs like <code>RecyclerView</code> and makes for a great UI testing experience! We will
+                    cover some of those APIs later in the <strong>Espresso-Contrib</strong> section of this codelab.</p>
+            </aside>
+            <pre><code>// Scroll notes list to added note, by finding its description
+onView(withId(R.id.notes_list)).perform(
+       scrollTo(hasDescendant(withText(newNoteDescription))));
+
+// Verify note is displayed on screen
+onView(withItemText(newNoteDescription)).check(matches(isDisplayed()));</code></pre>
+            <p>This is our final implementation of the <code>addNoteToNotesList()</code> test:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/NotesScreenTest.java" target="_blank">androidTest/.../NotesScreenTest.java</a></h3>
+            <pre><code>@Test
+public void addNoteToNotesList() throws Exception {
+   String newNoteTitle = &#34;Espresso&#34;;
+   String newNoteDescription = &#34;UI testing for Android&#34;;
+
+   // Click on the add note button
+   onView(withId(R.id.fab_add_notes)).perform(click());
+
+   // Add note title and description
+   // Type new note title
+   onView(withId(R.id.add_note_title)).perform(typeText(newNoteTitle), closeSoftKeyboard());
+   onView(withId(R.id.add_note_description)).perform(typeText(newNoteDescription),
+           closeSoftKeyboard()); // Type new note description and close the keyboard
+
+   // Save the note
+   onView(withId(R.id.fab_add_notes)).perform(click());
+
+   // Scroll notes list to added note, by finding its description
+   onView(withId(R.id.notes_list)).perform(
+           scrollTo(hasDescendant(withText(newNoteDescription))));
+
+   // Verify note is displayed on screen
+   onView(withItemText(newNoteDescription)).check(matches(isDisplayed()));
+}
+</code></pre>
+            <p><strong>Run all Espresso tests again.</strong>
+            </p>
+            <p>Our test <code>NotesScreenTest#addNoteToNotesList()</code> is now no longer listed as failing:</p>
+            <p>
+                <img style="max-width: 511.00px" src="img/9101489b75784f66.png">
+            </p>
+            <p>You can also toggle view to display all passed tests using the button
+                <img style="max-width: 27.00px" src="img/f517f99823c7ff6f.png">.</p>
+            <h2>Espresso test 3: Clicking a note</h2>
+            <p>In the previous step we implemented a test for the notes Presenter that verified that calling the ‘open a note&#39; call told the View to display note details. Now we will implement an end-to-end UI test that verifies that clicking a note
+                will display the correct note on screen.</p>
+            <p>We will start again by implementing the test and then implementing the UI in the View.</p>
+            <aside class="special">
+                <p><strong>What happens in the app when you click a note? Let&#39;s recap:</strong>
+                </p>
+                <p>The presenter receives a callback to <code>openNoteDetails(...)</code> with a note. This is triggered from a callback from the RecyclerView that displays the grid of notes.</p>
+                <p>The presenter then calls <code>showNoteDetailUI</code> on the <code>View</code> with the ID of the note.</p>
+            </aside>
+            <h3>Switch build variant to mockDebug</h3>
+            <p>The test we are implementing now uses the mock source set to simulate a notes repository with a fake implementation. You need to switch your build variant to <code>mockDebug</code> to activate the correct tests. Our tests for the <code>mockDebug</code>                variant live in <code>app/src/andoidTestMock/...</code>.</p>
+            <p>
+                <img style="max-width: 513.50px" src="img/791d63860007f7b8.png">
+            </p>
+            <h3>Launch NoteDetailActivity with an Intent extra parameter</h3>
+            <p><strong>Edit the file </strong><code>app/src/</code><strong><code>androidTestMock</code></strong><code>/java/.../notedetail/</code><strong><code>NoteDetailScreenTest.java</code></strong><code> </code>and comment in the method as you work through
+                this section:</p>
+            <p>Our test is for the <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notedetail/NoteDetailActivity.java" target="_blank"><code>NoteDetailActivity</code></a><code>,</code><strong> we have already defined </strong>an
+                <a href="http://developer.android.com/reference/android/support/test/rule/ActivityTestRule.html" target="_blank"><code>ActivityTestRule</code></a><code> </code>for that Activity. The additional parameters specify the touch mode and if
+                the Activity should be automatically launched before each <code>@Test</code>. We&#39;ll need to supply an extra parameter to the Activity via a custom Intent, so we will handle the launch ourselves.</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/notedetail/NoteDetailScreenTest.java" target="_blank">androidTestMock/.../NoteDetailScreenTest.java</a></h3>
+            <pre><code>@Rule
+public ActivityTestRule&lt;NoteDetailActivity&gt; mNoteDetailActivityTestRule =
+        new ActivityTestRule&lt;&gt;(NoteDetailActivity.class, true /* Initial touch mode  */,
+                false /* Lazily launch activity */);</code></pre>
+            <p>Next, we will set up a method annotated with <code>@Before</code> that accesses this rule to create the intent (with a supplied note ID that we wish to display) that will start the Activity. The <code>ActivityTestRule</code> handles the creation
+                and the lifecycle of the Activity during the test. This set up is essentially similar to the call to <code>NoteDetailActivity.newInstance(...)</code> with a Note ID.</p>
+            <p>We are using the <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/mock/java/com/example/android/testing/notes/data/FakeNotesServiceApiImpl.java" target="_blank"><code>FakeNotesServiceApiImpl</code></a> to store
+                our notes and we have added one single note to our repository. Comment in the set up steps in <code>intentWithStubbedNoteId()</code>:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/notedetail/NoteDetailScreenTest.java" target="_blank">androidTestMock/.../NoteDetailScreenTest.java</a></h3>
+            <pre><code>@Before
+public void intentWithStubbedNoteId() {
+   // Add a note stub to the fake service api layer.
+   FakeNotesServiceApiImpl.addNotes(NOTE);
+
+   // Lazily start the Activity from the ActivityTestRule this time to inject the start Intent
+   Intent startIntent = new Intent();
+   startIntent.putExtra(NoteDetailActivity.EXTRA_NOTE_ID, NOTE.getId());
+   mNoteDetailActivityTestRule.launchActivity(startIntent);
+
+   registerIdlingResource();
+}</code></pre>
+            <h3>Implement the test NoteDetailScreenTest#noteDetails_DisplayedInUI</h3>
+            <p>Implement the test <code>noteDetails_DisplayedInUi()</code> that verifies that the title, description and image match what we have just added. (Remember, the <code>@Before</code> method starts the <code>NoteDetailActivity</code> to the note
+                we have just added.)</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/notedetail/NoteDetailScreenTest.java" target="_blank">androidTestMock/.../NoteDetailScreenTest.java</a></h3>
+            <pre><code>@Test
+public void noteDetails_DisplayedInUi() throws Exception {
+   // Check that the note title, description and image are displayed
+   onView(withId(R.id.note_detail_title)).check(matches(withText(NOTE_TITLE)));
+   onView(withId(R.id.note_detail_description)).check(matches(withText(NOTE_DESCRIPTION)));
+   onView(withId(R.id.note_detail_image)).check(matches(allOf(
+           hasDrawable(),
+           isDisplayed())));
+}</code></pre>
+            <h3>Run the UI Test and Implement the logic</h3>
+            <p>Next, run this test! Right click on the class <code>NoteDetailsScreenTest</code> and select <strong>Run</strong> &gt; <strong>Run &#34;NoteDetailsScreenTest&#34;</strong> or use the build configuration we have set up before.</p>
+            <p>The test will fail because we haven&#39;t implemented the logic in our View yet.</p>
+            <p>Switch to the <strong>Run</strong> view in Android Studio to see which test failed (and why it failed).</p>
+            <p>
+                <img style="max-width: 624.00px" src="img/cea9cb4ac54b733c.png">
+            </p>
+            <aside class="warning">
+                <p>You may see the following error when running this test:</p>
+                <p><code>Process finished with exit code 1</code>
+                </p>
+                <p><code>Class not found: &#34;com.example.android.testing.notes.notedetail.NoteDetailScreenTest&#34;Empty test suite.</code>
+                </p>
+                <p>If that happens you&#39;re very likely using the wrong test run configuration. Here is what the context menu should look like to create and run a instrumentation test run configuration:</p>
+                <p>
+                    <img style="max-width: 304.50px" src="img/1d46c998bfb0251a.png">
+                </p>
+                <p>Try to run all tests in the package <strong><code>com.example.android.testing.notes</code></strong>: Right click on the package name under <code>app &gt; src &gt; androidTestMock &gt; java</code> and select <code>&#34;Run tests in ‘com.example...</code>&#39;&#34;
+                    and you should see the instrumentation test run configuration from the first screenshot.</p>
+                <p>See the <strong>Troubleshooting section</strong> at the end if you have trouble running this test. (You may need to uninstall the previous build first - run the <code>uninstallAll</code> gradle task.)</p>
+            </aside>
+            <p>The test will fail with an error similar to this:</p>
+            <pre>android.support.test.espresso.base.DefaultFailureHandler$AssertionFailedWithCauseError: &#39;with text: is &#34;ATSL&#34;&#39; doesn&#39;t match the selected view.
+Expected: with text: is &#34;ATSL&#34;
+Got: &#34;AppCompatTextView{id=2131492979, res-name=note_detail_title, visibility=VISIBLE, width=0, height=103, has-focus=false, has-focusable=fals
+&lt;... stacktrace ...&gt;</pre>
+            <p>This error tells us that the title <code>TextView</code> does not contain the expected text we have set on it.</p>
+            <p>We haven&#39;t implemented the hooks for the <code>NoteDetailContract.View</code> yet which handles the display of note details.</p>
+            <p><strong>Edit the file </strong><code>app/src/main/java/.../noteDetail/NoteDetailFragment.java</code><strong> to add the missing logic</strong>:</p>
+            <p>Implement the methods: <code>setProgressIndicator,</code> <code>hideDescription,</code> <code>hideTitle,</code> <code>showDescription</code> and <code>showTitle:</code>
+            </p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notedetail/NoteDetailFragment.java" target="_blank">NoteDetailFragment.java</a></h3>
+            <pre><code>@Override
+public void setProgressIndicator(boolean active) {
+   if (active) {
+       mDetailTitle.setText(&#34;&#34;);
+       mDetailDescription.setText(getString(R.string.loading));
+   }
+}
+
+@Override
+public void hideDescription() {
+   mDetailDescription.setVisibility(View.GONE);
+}
+@Override
+public void hideTitle() {
+   mDetailTitle.setVisibility(View.GONE);
+}
+
+@Override
+public void showDescription(String description) {
+   mDetailDescription.setVisibility(View.VISIBLE);
+   mDetailDescription.setText(description);
+}
+
+@Override
+public void showTitle(String title) {
+   mDetailTitle.setVisibility(View.VISIBLE);
+   mDetailTitle.setText(title);
+}</code></pre>
+            <p>Run the test again (<code>NoteDetailScreenTest</code>) - the test <code>noteDetails_DisplayedInUi</code> now passes:</p>
+            <p>
+                <img style="max-width: 510.00px" src="img/bd60745b3571c66b.png">
+            </p>
+            <h2>Troubleshooting</h2>
+            <p>A common error while running your tests in this codelab setup is: </p>
+            <aside class="warning">
+                <p><code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code>
+                </p>
+            </aside>
+            <p>If you run into this error uninstall all artifacts from your test device using Android studio. Open the <strong>Gradle view</strong> on the right hand side of Android studio. Open <strong>:app </strong>&gt; <strong>Tasks &gt; install</strong>                and run the
+                <strong>uninstallAll</strong> task by double clicking it.</p>
+            <p>
+                <img style="max-width: 413.74px" src="img/6b558eedd0d99284.png">
+            </p>
+
+
+        </google-codelab-step>
+
+        <google-codelab-step label="Bonus: Espresso-Intents" duration="10">
+            <p><strong>Continue with your existing Android Studio project for this section.</strong>
+            </p>
+            <aside class="special">
+                <p><strong>If you would like to start fresh for this section, continue from snapshot ‘step-8&#39;:<br></strong>Open the directory named <strong>step-8</strong> from <a href="https://github.com/googlecodelabs/android-testing/raw/master/android-testing-checkpoints.zip"
+                        target="_blank">the zip file</a> in Android Studio or checkout the branch <code>step-8</code> directly from github:
+                    <br><code>git clone https://github.com/googlecodelabs/android-testing.git -b step-8</code>
+                </p>
+            </aside>
+            <p><a href="https://google.github.io/android-testing-support-library/docs/espresso/intents/index.html" target="_blank">Espresso-Intents</a> is an extension to Espresso that focuses on the validation and mocking of Intents. It has a similar API
+                to Mockito (that we have explored earlier for mocking Java code), but for stubbing Intents.</p>
+            <p>If your app takes advantage of the full power of the Android platform by <em>intenting</em> out to other applications or the platform, you can focus on your own functionality and rely on the platform and other apps to function as expected.
+                With Espresso-Intents you can validate your Intents or even stub out Intents by responding with your own results.</p>
+            <h2>Intent Matching</h2>
+            <p>Espresso-Intents adds the functionality to intercept Intents based on some matching criteria. These matchers are defined via <a href="https://code.google.com/p/hamcrest/" target="_blank">Hamcrest Matchers</a> (that we briefly explored earlier
+                in the mocking section), but usually the <a href="http://developer.android.com/reference/android/support/test/espresso/intent/matcher/IntentMatchers.html" target="_blank">basic built-in matchers</a> provide sufficient functionality: you
+                can match based on action, data, extras and categories or any combination thereof.</p>
+            <h2>Intent Stubbing</h2>
+            <p>Espresso-Intents also adds functionality to provide stub implementations to matching intents, by intercepting Intents and providing a response for Activities that are started with <code>startActivityForResult(...)</code>
+            </p>
+            <p>Clicking on the &#34;Add image&#34; button on the &#34;Add Note&#34; screen sends an Intent to the camera application on the device to take a photo. The image is then returned back to the app. </p>
+            <p>We will write a test that verifies that after a photo is taken from that screen, its thumbnail is displayed in our app.</p>
+            <h3>Switch to the mockDebug Build Variant</h3>
+            <p>Make sure to select the the <strong>mockDebug</strong> build variant:</p>
+            <p>
+                <img style="max-width: 416.00px" src="img/d54a3100a57e43a1.png">
+            </p>
+            <h3>Implement AddNoteScreenTest#addImageToNote_ShowsThumbnailInUi with Espresso-Intents</h3>
+            <p>Edit the file <code>app/src/androidTestMock/java/.../addnote/AddNoteScreenTest.java</code> and comment in the following lines as you work through this section:</p>
+            <p>First we have already set up an <code>IntentsTestRule</code>. It is an extension of <code>ActivityTestRule</code> that we have used earlier and specifically built for using the Espresso-Intents API in functional UI tests. It initialises Espresso-Intents
+                before each <code>@Test</code> and releases it after each run.</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/addnote/AddNoteScreenTest.java" target="_blank">androidTestMock/.../AddNoteScreenTest.java</a></h3>
+            <pre><code>@Rule
+public IntentsTestRule&lt;NotesActivity&gt; mNotesIntentsTestRule = new IntentsTestRule&lt;&gt;(NotesActivity.class);</code></pre>
+            <p>Next, we will implement the test <code>addImageToNote_ShowsThumbnailUi()</code>.
+                <br>Remove the call to <code>fail(...)</code>.</p>
+            <pre><code>@Test
+public void addImageToNote_ShowsThumbnailInUi() {
+    ...
+}</code></pre>
+            <p>We will stub out all Intents that match the <code>MediaStore.ACTION_IMAGE_CAPTURE</code> action and always respond with a valid (<code>RESULT_OK)</code> <code>ActivityResult</code> (provided by a call to <code>createImageCaptureActivityResultStub()</code>                ).</p>
+            <p>First we will create the result object:</p>
+            <pre><code>ActivityResult result = createImageCaptureActivityResultStub();</code></pre>
+            <p>Next we instruct Espresso to respond to all intents that have the <code>MediaStore.ACTION_IMAGE_CAPTURE</code> action with the result object we have just created:</p>
+            <pre><code>intending(hasAction(MediaStore.ACTION_IMAGE_CAPTURE)).respondWith(result);</code></pre>
+            <p>Next we verify that no thumbnail image is being shown as a sanity check - no image has been taken yet.</p>
+            <pre><code>// Check thumbnail view is not displayed
+        onView(withId(R.id.add_note_image_thumbnail)).check(matches(not(isDisplayed())));
+
+selectTakeImageFromMenu();
+</code></pre>
+            <p>We select the &#34;Add image&#34; option in the menu using a short helper method:</p>
+            <pre><code>selectTakeImageFromMenu();</code></pre>
+            <p><code>selectTakeImageFromMenu()</code> clicks the &#34;Add image&#34; button that fires off a <code>MediaStore.ACTION_IMAGE_CAPTURE</code> Intent. (If you are curious, we are using a convenience method called <code>openActionBarOverflowOrOptionsMenu(...)</code>                from Espresso to open the menu.)</p>
+            <p>If the Intent was set up correctly, it will be captured by our test and a valid result will be returned. If the Intent does not match our expected value, it will not be matched and an assertion exception would be thrown. </p>
+            <p>Finally we check that the thumbnail is now being displayed:</p>
+            <pre><code>onView(withId(R.id.add_note_image_thumbnail))
+.check(matches(allOf(
+    hasDrawable(),
+    isDisplayed())));</code></pre>
+            <p>This is our final <code>addImageToNote_ShowsThumbnailInUi()</code> test:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/addnote/AddNoteScreenTest.java" target="_blank">androidTestMock/.../AddNoteScreenTest.java</a></h3>
+            <pre><code>@Test
+public void addImageToNote_ShowsThumbnailInUi() {
+   // Create an Activity Result which can be used to stub the camera Intent
+   ActivityResult result = createImageCaptureActivityResultStub();
+   // If there is an Intent with ACTION_IMAGE_CAPTURE, intercept the Intent and respond with
+   // a stubbed result.
+   intending(hasAction(MediaStore.ACTION_IMAGE_CAPTURE)).respondWith(result);
+
+   // Check thumbnail view is not displayed
+   onView(withId(R.id.add_note_image_thumbnail)).check(matches(not(isDisplayed())));
+
+   selectTakeImageFromMenu();
+
+   // Check that the stubbed thumbnail is displayed in the UI
+   onView(withId(R.id.add_note_image_thumbnail))
+           .perform(scrollTo()) // Scroll to thumbnail
+           .check(matches(allOf(
+                   hasDrawable(), // Check ImageView has a drawable set with a custom matcher
+                   isDisplayed())));
+}</code></pre>
+            <p><strong>Run the test! </strong>
+            </p>
+            <p>It should pass:</p>
+            <p>
+                <img style="max-width: 506.00px" src="img/2c24d21a0543f0a0.png">
+            </p>
+            <p>By using the full power of the Android platform (and being a good app citizen), you can write tests that focus on your own functionality, without having to worry about functionality of the platform.</p>
+
+
+        </google-codelab-step>
+
+        <google-codelab-step label="Bonus: Espresso-Contrib" duration="12">
+            <p><strong>Continue with your existing Android Studio project for this section.</strong>
+            </p>
+            <aside class="special">
+                <p><strong>If you would like to start fresh for this section, continue from snapshot ‘step-9&#39;:<br></strong>Open the directory named <strong>step-9</strong> from <a href="https://github.com/googlecodelabs/android-testing/raw/master/android-testing-checkpoints.zip"
+                        target="_blank">the zip file</a> in Android Studio or checkout the branch <code>step-9</code> directly from github:
+                    <br><code>git clone https://github.com/googlecodelabs/android-testing.git -b step-9</code>
+                </p>
+            </aside>
+            <p>Espresso-contrib is an extension to the Espresso framework that contains a few additional, useful features that will help you write great tests with Espresso. Part of this component is support for RecyclerView that enables you to write <code>ViewMatcher</code>s
+                for items or perform specific <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/RecyclerViewActions.PositionableRecyclerViewAction.html" target="_blank"><code>RecyclerViewAction</code></a>s (such as
+                scrolling to a specific item). It also contains explicit support for the navigation drawer through <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerActions.html" target="_blank"><code>DrawerActions</code></a>                and <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html" target="_blank"><code>DrawerMatchers</code></a><code>.</code>
+            </p>
+            <h2>Implement Espresso tests for the Navigation Drawer</h2>
+            <p>Let&#39;s use some of these features of Espresso-contrib to write a test that verifies that opening the navigation drawer and selecting the ‘Statistics&#39; option opens that screen and hides the drawer when selected.</p>
+            <h3>Switch to the prodDebug build variant</h3>
+            <p>This test is using the main implementation and does not rely on the mock target. Switch the build variant to <strong>prodDebug</strong>:</p>
+            <p>
+                <img style="max-width: 415.00px" src="img/62ceca40c67596eb.png">
+            </p>
+            <h3>Implement AppNavigationTest#clickOnAndroidHomeIcon_OpensNavigation</h3>
+            <p>Edit the file <code>app/src/androidTest/java/.../notes/AppNavigationTest.java</code> and comment in the following lines as you work through this section:</p>
+            <p>Let&#39;s add a new test called <code>AppNavigationTest</code>.</p>
+            <p>Make sure it is setup to run with the JUnit4 runner and is defined as a large test:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/AppNavigationTest.java" target="_blank">androidTest/.../AppNavigationTest.java</a></h3>
+            <pre><code>@RunWith(AndroidJUnit4.class)
+@LargeTest
+public class AppNavigationTest {
+...
+}</code></pre>
+            <aside class="special">
+                <p><strong>Test Qualifiers</strong>
+                </p>
+                <p>Android test size annotations let you classify how long a test should take to run, and consequently, how frequently you can run the test. The annotations are defined in the android.test.suitebuilder.annotation package. </p>
+                <ul>
+                    <li><code>@SmallTest</code>: <em>&lt; 100ms execution time</em>, should be run very frequently, only uses local dependencies, no resource access</li>
+                    <li><code>@MediumTest</code>: <em>&lt; 2s execution time</em>, focus on limited subset of app components, no external resource access, mocking external dependencies</li>
+                    <li><code>@LargeTest</code>: <em>&gt; 2s execution time</em>, makes use of all platform resources, including external communications
+                    </li>
+                </ul>
+                <p>Well organized tests suites using test size annotations can improve your efficiency and productivity and establish a common understanding within your team on when to use the right test annotation for the job.</p>
+                <p>You can find out more in <a href="https://plus.google.com/+AndroidDevelopers/posts/TPy1EeSaSg8" target="_blank">this excellent #Protip on +Android Developers</a>.</p>
+            </aside>
+            <h3>Espresso-Intents Test 1: Clicking &#34;Navigate up&#34; opens the Navigation Drawer</h3>
+            <p>Let&#39;s write a small test that verifies that clicking the ‘Home&#39; icon on the start screen opens the navigation drawer.</p>
+            <p>Implement <code>AppNavigationTest#clickOnAndroidHomeIcon_OpensNavigation()</code>, which:</p>
+            <ul>
+                <li>Finds the navigation drawer layout and checks that it is closed (using the special <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html#isClosed(int)" target="_blank"><code>isClosed()</code></a>                    matcher) </li>
+                <li>Clicks the &#34;navigate up&#34; button (we can find it by matching its content description - it is &#34;Navigate up&#34;.)</li>
+                <li>Verifies that the drawer is now open by using the <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html#isOpen(int)" target="_blank"><code>isOpen(...)</code></a> matcher.</li>
+            </ul>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/AppNavigationTest.java" target="_blank">androidTest/.../AppNavigationTest.java</a></h3>
+            <pre><code>@Test
+public void clickOnAndroidHomeIcon_OpensNavigation() {
+   // Check that left drawer is closed at startup
+   onView(withId(R.id.drawer_layout))
+           .check(matches(isClosed(Gravity.LEFT))); // Left Drawer should be closed.
+
+   // Open Drawer
+   onView(withContentDescription(&#34;Navigate up&#34;)).perform(click());
+
+   // Check if drawer is open
+   onView(withId(R.id.drawer_layout))
+           .check(matches(isOpen(Gravity.LEFT))); // Left drawer is open open.
+}</code></pre>
+            <p><strong>Run the test - clickOnAndroidHomeIcon_OpensNavigation should complete successfully:</strong>
+            </p>
+            <p>
+                <img style="max-width: 536.00px" src="img/f8e96fe46defff39.png">
+            </p>
+            <h3>Espresso-Intents Test 2: Clicking the statistics option in navigation drawer opens the statistics screen</h3>
+            <p>Next, implement our test called <code>clickOnStatisticsNavigationItem_ShowsStatisticsScreen()</code> in the file using the drawer support from Espresso-contrib. </p>
+            <p>
+                <img style="max-width: 297.10px" src="img/a081fdc23ff5f548.png">
+            </p>
+            <p>Edit the file <code>app/src/androidTest/java/.../notes/AppNavigationTest.java</code> and comment in the following lines as you work through this section:</p>
+            <p>We will be using a custom <code>ViewAction</code> that we have implemented for you: <code>navigateTo(...)</code>. It provides an easy interface to match <code>MenuItem</code>s in a <code>NavigationView</code>. Here we will be using it for
+                the navigation drawer to find a specific item that we want to select. You can find its implementation in <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/custom/action/NavigationViewActions.java"
+                    target="_blank"><code>app/src/androidTest/.../action/NavigationViewActions.java</code></a> if you want to find out how it works exactly.</p>
+            <ul>
+                <li>Find the navigation drawer layout, check that it is closed (using the special <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html#isClosed(int)" target="_blank"><code>isClosed()</code></a>                    matcher) and trigger its <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerActions.html#open(int)" target="_blank"><code>open(...)</code></a> action to open the drawer.</li>
+                <li>Now that the drawer is open we need to find the &#34;statistics&#34; item in the drawer and select it. We are using our own <code>navigateTo(...)</code> matcher on the DrawerLayout to find the statistics item by its ID.</li>
+                <li>Lastly, we verify that the correct text message &#34;No statistics&#34; is displayed. We are doing this by loading the text resource from the app itself (by getting the Android <code>Context</code> from the <a href="http://developer.android.com/reference/android/support/test/InstrumentationRegistry.html"
+                        target="_blank"><code>InstrumentationRegistry</code></a>) and checking that the shown <code>TextView</code> displays the correct text.</li>
+            </ul>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/AppNavigationTest.java" target="_blank">androidTest/.../AppNavigationTest.java</a></h3>
+            <pre><code>@Test
+public void clickOnStatisticsNavigationItem_ShowsStatisticsScreen() {
+   // Open Drawer to click on navigation.
+   onView(withId(R.id.drawer_layout))
+           .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
+           .perform(open()); // Open Drawer
+
+   // Start statistics screen.
+   onView(withId(R.id.nav_view))
+           .perform(navigateTo(R.id.statistics_navigation_menu_item));
+
+   // Check that statistics Activity was opened.
+   String expectedNoStatisticsText = InstrumentationRegistry.getTargetContext()
+           .getString(R.string.no_statistics_available);
+   onView(withId(R.id.no_statistics)).check(matches(withText(expectedNoStatisticsText)));
+}</code></pre>
+
+
+        </google-codelab-step>
+
+        <google-codelab-step label="Bonus: Idling resources" duration="10">
+            <p>One of the key parts of Espresso is its ability to synchronize all test actions. Espresso waits until the UI is idle before it moves to the next operation. Likewise, it waits for AsyncTask background operations to complete. In general, this
+                should address the majority of test synchronizations in your application. If you have written UI tests before, you will appreciate this feature - there&#39;s no need to add waits or synchronization points to your app!</p>
+            <p>However, sometimes it is not possible to rely on automatic synchronisation, for instance when your app does background operations via non-standard means (managing threads directly or using custom Services). If you have run into a situation
+                where you cannot rely on Espresso to automatically handle the synchronization for you, you can use <strong>idling resources</strong> and still rely on Espresso for synchronization. </p>
+            <p>As you use a resource that needs to be synchronized, register it with Espresso using <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/core/src/main/java/android/support/test/espresso/Espresso.java"
+                    target="_blank"><code>Espresso.registerIdlingResource</code></a> in your test set up (usually in your <code>@Before</code> method), and implement the <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/idling-resource/src/main/java/android/support/test/espresso/IdlingResource.java"
+                    target="_blank"><code>IdlingResource</code></a> interface to track their use.</p>
+            <h2>Idling Resources in Practice</h2>
+            <p>In our app we have wrapped the calls to <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/util/SimpleCountingIdlingResource.java" target="_blank"><code>Simple</code><code>CountingIdlingResource</code></a>                (which is a simple implementation of the
+                <code>IdlingResource</code> interface) in the class <code>EspressoIdlingResource</code> that is used across the entire application. This makes it easy to use the idling resources across the entire app.</p>
+            <aside class="special">
+                <p>In case you don&#39;t want to write your own, Espresso got you covered. Have a look at <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/CountingIdlingResource.html" target="_blank">CountingIdlingResource</a>                    an <code>IdlingResource</code> provided by Espresso and maintains an internal counter that is exposed via <code>increment()</code> and <code>decrement()</code> calls.</p>
+            </aside>
+            <p>You can see it in action in the <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notes/NotesPresenter.java" target="_blank"><code>NotesPresenter</code></a>, where we
+                increment the counter just before we make an asynchronous call to access the notes api to load in a list of notes. This signals to Espresso that the app is busy and holds all further execution of Espresso commands until the app is marked
+                as idle again after the callback returns:</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notes/NotesPresenter.java" target="_blank">NotesPresenter.java</a></h3>
+            <pre><code>@Override
+public void loadNotes(boolean forceUpdate) {
+    mNotesView.setProgressIndicator(true);
+    if (forceUpdate) {
+        mNotesRepository.refreshData();
+    }
+
+    // The network request might be handled in a different thread so make sure Espresso knows
+    // that the app is busy until the response is handled.
+    EspressoIdlingResource.increment(); // App is busy until further notice
+
+    mNotesRepository.getNotes(new NotesRepository.LoadNotesCallback() {
+        @Override
+        public void onNotesLoaded(List&lt;Note&gt; notes) {
+            EspressoIdlingResource.decrement(); // Set app as idle.
+            mNotesView.setProgressIndicator(false);
+            if (notes.isEmpty()) {
+                mNotesView.showNotesEmptyPlaceholder();
+            } else {
+                mNotesView.showNotes(notes);
+            }
+        }
+    });
+}
+</code></pre>
+
+
+        </google-codelab-step>
+
+        <google-codelab-step label="Bonus: Code Coverage" duration="10">
+            <p><a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank">Code coverage</a> describes how well your application is covered by tests. This can be useful to find areas of your app that aren&#39;t tested well enough (and could contain
+                potential bugs).</p>
+            <h2>Code Coverage for Unit Tests</h2>
+            <p>Android studio has built-in support to generate code coverage reports from unit tests. We&#39;ll look at instrumentation tests in the next section. Note that these reports are independent of each other and are not merged.</p>
+            <p>Create a run configuration for the unit tests. In the test source set, under java, select the package name: <strong>com.example.android.testing.notes</strong>. Right click on the package name and select &#34;<strong>Create tests in com.example.android.testing.notes</strong>&#34;.
+                (If you have previously created a test configuration, enable it by clicking on &#34;Select tests in com.example...&#34; In the next step, you need to edit the existing test configuration: <code>Run</code> &gt; <code>Edit configurations</code>                )</p>
+            <p>
+                <img style="max-width: 576.30px" src="img/63f8eca97aebcd6.png">
+            </p>
+            <p>On the next dialog, select the <strong>&#34;Code Coverage</strong>&#34; tab. </p>
+            <p>Select the &#34;IntelliJ IDEA&#34; coverage runner. Accept the (empty) default setting for the &#34;packages and classes to record coverage data&#34;. (You could go ahead and exclude the platform generated files (R.java and BuildConfig.java)
+                by specifying the packages in the app specifically, but that&#39;s not required.)</p>
+            <p>Click OK to create the build configuration.</p>
+            <p>
+                <img style="max-width: 525.13px" src="img/ea90f941e4524d27.png">
+            </p>
+            <p>Next, run the code coverage report. In the build configuration, select the new build configuration we have just created, and click the code coverage button
+                <img style="max-width: 27.42px" src="img/36ba3b321e7c4e64.png"> to generate the report.</p>
+            <p>
+                <img style="max-width: 624.00px" src="img/d14bfbf66697c55c.png">
+            </p>
+            <p>When the task finishes, the code coverage report will be displayed in a panel in the right hand side. (You may have to expand the panel by dragging on its side):</p>
+            <p>
+                <img style="max-width: 588.00px" src="img/346f02582a89cc93.png">
+            </p>
+            <p>On this panel you can navigate through each feature (which is contained in its own package) and you can even drill down all the way to exact methods. For example, navigate to the <code>notedetail</code> package (<code>com</code> &gt; <code>example</code>                &gt; <code>android</code> &gt; <code>testing</code> &gt; <code>notes</code>) to see code coverage for the notes detail feature. Clicking on a class opens the editor for that file - code coverage is displayed in red and green bars on the
+                left hand side:</p>
+            <p>
+                <img style="max-width: 212.00px" src="img/cbc5212b9a0bb123.png">
+            </p>
+            <h2>Code Coverage for Instrumentation Tests</h2>
+            <p>There is no support for showing code coverage reports for instrumentation tests in Android Studio. </p>
+            <p>First we need to update our gradle build configuration to enable code coverage reports for debug builds.</p>
+            <p>Open the file <code>app/build.gradle</code> and comment in the following line within the <code>android</code> section.</p>
+            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/build.gradle" target="_blank">app/build.gradle</a></h3>
+            <pre><code>buildTypes {
+    debug {
+        // Run code coverage reports by default on debug builds.
+        testCoverageEnabled = true
+    }
+}</code></pre>
+            <p>This enables a new gradle task that will generate a code coverage report for debug builds.</p>
+            <p>In Android Studio, sync your gradle configuration with your project (
+                <img style="max-width: 20.00px" src="img/85fdea314794cc0d.png"> in the toolbar) to see the new *CoverageReport gradle tasks.</p>
+            <p>Next, run the gradle task <strong><code>createMockDebugAndroidTestCoverageReport</code></strong> to generate the coverage report. You can run it from the <strong>Gradle Tasks</strong> perspective (on the right hand side of the screen in Android
+                Studio) double click on <strong>verification</strong> &gt; <strong><code>createMockDebugAndroidTestCoverageReport</code></strong>:</p>
+            <p>
+                <img style="max-width: 326.00px" src="img/89f9949df713766e.png">
+            </p>
+            <p>Or you can run it directly from the commandline:</p>
+            <pre><code>./gradlew createMockDebugAndroidTestCoverageReport</code></pre>
+            <p>Once the task is complete, you can find the coverage report in <code>app/build/reports/coverage/mock/debug</code>.</p>
+            <p>Open the file index.html in your web browser. (In Android Studio right click on the file index.html and select <strong>Open in Browser</strong> &gt; Chrome).</p>
+            <p>The report will look similar to this:</p>
+            <p>
+                <img style="max-width: 624.00px" src="img/10d6944244d0394b.png">
+            </p>
+            <p>You can explore the coverage of individual packages and files by navigating through the elements.</p>
+            <p>Go to the <code>NotePresenter</code> class (under <code>com.example.android.testing.notes.addnote</code> &gt; <code>AddNotePresenter</code>):</p>
+            <p>
+                <img style="max-width: 624.00px" src="img/7be003e32a6321b9.png">
+            </p>
+            <p>Click on a method to see a graphical representation of the parts of the code that are covered by our instrumentation tests:</p>
+            <p>
+                <img style="max-width: 513.50px" src="img/559da01c95c43b0f.png">
+            </p>
+
+
+        </google-codelab-step>
+
+        <google-codelab-step label="Congratulations!" duration="0">
+            <p>
+                <img style="max-width: 737.14px" src="img/260e2d084f0a1051.png">
+            </p>
+            <p><strong>Congratulations!</strong>
+            </p>
+            <p>You have now learned the basics of app architecture design using the MVP (Model-View-Presenter) pattern and explored the world of testing on Android!</p>
+            <p>In this codelab we have covered testing from a few different angles - from functional unit tests (with the help of Mockito to handle Android dependencies) to instrumental UI tests with Espresso. Developing an application from a test-driven
+                point of view like we did here can help you define a clean architecture and establish clear communication between different components of your application.</p>
+            <h3 class="checklist">What we&#39;ve covered</h3>
+            <ul class="checklist">
+                <li>Model-View-Presenter architecture</li>
+                <li>Unit Testing on Android: JUnit4</li>
+                <li>UI Testing on Android with Espresso</li>
+                <li>Mocking dependencies with Mockito</li>
+                <li>Advanced Espresso topics: Espresso-contrib and Espresso-intents</li>
+                <li>Code coverage reports</li>
+            </ul>
+            <h3>Next Steps</h3>
+            <ul>
+                <li>Add some tests to your own app!</li>
+                <li>For your next application, consider following a similar test-driven approach for development and design.</li>
+            </ul>
+            <h3>Learn More</h3>
+            <ul>
+                <li><a href="http://google.github.io/android-testing-support-library/" target="_blank">Android Testing Support Library Documentation</a>
+                </li>
+                <li><a href="http://tools.android.com/tech-docs/unit-testing-support" target="_blank">Unit Testing Tools Support Documentation</a>
+                </li>
+                <li><a href="http://developer.android.com/tools/testing/testing-tools.html" target="_blank">Android Testing Documentation</a> </li>
+                <li><a href="http://developer.android.com/training/testing.html" target="_blank">Android Testing Training</a> - Training classes for Unit and Instrumentation Testing</li>
+                <li><a href="https://github.com/googlesamples/android-testing" target="_blank">Android Testing Samples</a> - A collection Android testing sample projects</li>
+                <li><a href="https://github.com/googlesamples/android-testing-templates" target="_blank">Android Testing Blueprint</a> - A collection of Google&#39;s Android testing tools and frameworks, all integrated in a single application project.</li>
+                <li><a href="https://google.github.io/android-testing-support-library/docs/espresso/cheatsheet/" target="_blank">Espresso Cheat Sheet</a> - A quick reference you can use during development. This cheat sheet contains most available <code>Matchers</code>,
+                    <code>ViewActions</code> and <code>ViewAssertions</code>.</li>
+                <li><a href="https://github.com/googlesamples/android-architecture" target="_blank">Android Architecture Blueprints</a> - A collection of samples to discuss and showcase different architectural tools and patterns for Android apps.</li>
+            </ul>
+            <p>
+                <a href="https://docs.google.com/a/google.com/forms/d/1jhSvKLZSpgguVyc03FdjSMuyLsBwe2upKggte8nAhSs/viewform?entry.340009906=Android-testing" target="_blank">
+                    <paper-button class="colored" raised>Tell us how we did</paper-button>
+                </a>
+            </p>
+
+
+        </google-codelab-step>
+
+    </google-codelab>
+
+    <script>
+        (function(i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function() {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-49880327-14', 'auto');
+
+        (function() {
+            var gaCodelab = '';
+            if (gaCodelab) {
+                ga('create', gaCodelab, 'auto', {
+                    name: 'codelab'
+                });
+            }
+
+            var gaView;
+            var parts = location.search.substring(1).split('&');
+            for (var i = 0; i < parts.length; i++) {
+                var param = parts[i].split('=');
+                if (param[0] === 'viewga') {
+                    gaView = param[1];
+                    break;
+                }
+            }
+            if (gaView && gaView !== gaCodelab) {
+                ga('create', gaView, 'auto', {
+                    name: 'view'
+                });
+            }
+        })();
+    </script>
+
+</body>
+
+</html>
