@@ -45,7 +45,7 @@
             $(function() {
                 $.each(document.images, function() {
                     var that = this;
-                    var src = $(that).attr('src');
+                    var src = $(that).attr('src') || '';
                     if (!src.length > 0) {
                         var fsrc = $(that).attr('fsrc');
                         var img = new Image();
