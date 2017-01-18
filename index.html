@@ -7,775 +7,1701 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <meta name="theme-color" content="#4F7DC9">
     <meta charset="UTF-8">
-    <title>Android Testing Codelab</title>
-    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <title>Android UI Testing</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/lightbox.min.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <link rel="import" href="elements/codelab.html">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+
     <style>
         body {
             font-family: "Roboto", sans-serif;
         }
     </style>
-
-</head>
-
-<body unresolved class="fullbleed">
-
-    <google-codelab title="Android Testing Codelab" environment="web" feedback-link="https://github.com/googlecodelabs/android-testing">
-        <google-codelab-step label="Writing UI tests with Espresso" duration="25">
-            <p><strong>Continue with your existing Android Studio project for this section.</strong>
-            </p>
-            <aside class="special">
-                <p><strong>If you would like to start fresh for this section, continue from snapshot ‘step-7&#39;:<br></strong>Open the directory named <strong>step-7</strong> from <a href="https://github.com/googlecodelabs/android-testing/raw/master/android-testing-checkpoints.zip"
-                        target="_blank">the zip file</a> in Android Studio or checkout the branch <code>step-7</code> directly from github:
-                    <br><code>git clone https://github.com/googlecodelabs/android-testing.git -b step-7</code>
-                </p>
-            </aside>
-            <p>Next, let&#39;s implement the user interface. We&#39;ll be following a similar approach as before. First we&#39;ll define the tests that verify how we expect the UI to behave, then the implementation follows from there.</p>
-            <h2>UI Testing on Android with Espresso</h2>
-            <p>The Android Testing Support Library contains the Espresso testing framework that provides APIs to simulate user interactions. Espresso has a very nice fluent, concise and readable Api to write functional UI tests and was built to make UI testing
-                as frictionless as possible. This means that you can focus on writing tests without having to deal with unreliable and flaky tests.</p>
-            <p>Although there is support for running instrumentation tests in the Android framework, current development efforts are focused around the new AndroidJUnitRunner which is released as part of the Android Testing Support Library.</p>
-            <h2>Set up Espresso and AndroidJUnitRunner</h2>
-            <p><strong>We have already set up the build dependencies for you</strong>, so there is no need to update our build configuration<strong>.<br></strong>If you are adding Espresso to your own project you need to add the AndroidJUnitRunner and Espresso
-                framework from the Android Testing Support Library to your <code>build.gradle</code>:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/build.gradle#L54" target="_blank">app/build.gradle</a></h3>
-            <pre><code>// Android Testing Support Library&#39;s runner and rules
-androidTestCompile &#34;com.android.support.test:runner:$rootProject.ext.runnerVersion&#34;
-androidTestCompile &#34;com.android.support.test:rules:$rootProject.ext.rulesVersion&#34;
-
-// Espresso UI Testing dependencies.
-androidTestCompile &#34;com.android.support.test.espresso:espresso-core:$rootProject.ext.espressoVersion&#34;
-androidTestCompile &#34;com.android.support.test.espresso:espresso-contrib:$rootProject.ext.espressoVersion&#34;
-</code></pre>
-            <h2>Set up Android Studio for Android instrumentation tests</h2>
-            <p>Unlike local unit tests, instrumentation tests must be placed in the <code>androidTest</code> source set (<code>app/src/androidTest/java/...</code>). Don&#39;t worry - we have already created the directory and files up for you.</p>
-            <p>Just to recap our project structure, we have three <em>build variants</em> for our app: </p>
-            <table>
-                <tr>
-                    <td colspan="1" rowspan="1">
-                        <p><code>mockDebug</code>
-                        </p>
-                    </td>
-                    <td colspan="1" rowspan="1">
-                        <p>Uses the <code>mock</code> <em>source set </em>to inject a mock data repository where notes are stored</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="1" rowspan="1">
-                        <p><code>prodDebug</code>
-                        </p>
-                    </td>
-                    <td colspan="1" rowspan="1">
-                        <p><code>Debug</code> build that uses the <code>prod</code> <em>source set</em> to inject the ‘real&#39; production data repository</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="1" rowspan="1">
-                        <p><code>prodRelease</code>
-                        </p>
-                    </td>
-                    <td colspan="1" rowspan="1">
-                        <p>Signed <code>Release</code> build that uses a ‘real&#39; data repository</p>
-                    </td>
-                </tr>
-            </table>
-            <p>The first test we are writing is using the <strong><code>prodDebug</code></strong> variant - make sure to select it for our test artifact before continuing. (Different tests and directories are activated based on the variant you have selected!)
-            </p>
-            <p>
-                <img style="max-width: 480.50px" src="img/7d867483dc450c86.png">
-            </p>
-            <h2>Set up your device for Espresso tests</h2>
-            <p>For this section of the codelab you will need a physical device or Android emulator, because we will be implementing the user interface.</p>
-            <aside class="warning">
-                <p>You need to <strong>turn off animations</strong> on your test device (or emulator), otherwise Espresso may not work as expected and your tests may fail. Turn off animations from <em>Settings</em> by opening <em>Developer Options</em> and
-                    turning all the following options under &#34;<em>Drawing</em>&#34; off:</p>
-                <ul>
-                    <li>Window animation scale</li>
-                    <li>Transition animation scale</li>
-                    <li>Animator duration scale</li>
-                </ul>
-            </aside>
-            <h2>Espresso Test 1: Opening the ‘Add Note&#39; screen</h2>
-            <p>Espresso can also perform user interactions (<a href="http://developer.android.com/reference/android/support/test/espresso/action/ViewActions.html" target="_blank"><code>ViewActions</code></a>) on a view, for example clicks and touches.</p>
-            <p>One of the key interactions in the app is <strong>clicking the floating action button to open the &#34;add note&#34; screen</strong>.</p>
-            <p>
-                <img style="max-width: 335.08px" src="img/96bf3222a3a23c5f.png">
-            </p>
-            <p>We will implement a test that opens the app, clicks that button and verifies that the correct screen is being displayed.</p>
-            <p><strong>Edit the file </strong><code>app/src/androidTest/java/.../notes/NotesScreenTest.java</code> and comment in the method
-                <code>clickAddNoteButton_opensAddNoteUi()</code> as you work through this section:</p>
-            <p>First, we need to find the floating action button in the view hierarchy (which we can identify by its ID <code>R.id.fab_notes</code>) and click it. Then we check that the &#34;add note&#34; screen has been shown, we can easily do this by checking
-                that the title of the screen (identified by its ID <code>R.id.add_note_title</code>) is being displayed:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/NotesScreenTest.java" target="_blank">androidTest/.../NotesScreenTest.java</a></h3>
-            <pre><code>@Test
-public void clickAddNoteButton_opensAddNoteUi() throws Exception {
-   // Click on the add note button
-   onView(withId(R.id.fab_add_notes)).perform(click());
-
-   // Check if the add note screen is displayed
-   onView(withId(R.id.add_note_title)).check(matches(isDisplayed()));
-}</code></pre>
-            <p>Note that we do not have to wait for the add note screen to be displayed. This is the power of Espresso - it automatically waits for the UI thread to be idle before running any further check. There is no need to implement these waits and delays
-                yourself.
-            </p>
-            <h2>Running Espresso tests</h2>
-            <p>Now that we have written our first test, it&#39;s time to run it!</p>
-            <aside class="warning">
-                <p>See the <strong>Troubleshooting section</strong> at the end if you have trouble running this test. (You may need to uninstall the previous build first - run the <code>uninstallAll</code> gradle task.)</p>
-            </aside>
-            <p><strong>Right click</strong> on the class that where we have just implemented our test (<code>androidTest/java/.../notes/NotesScreenTest.java</code>) then select &#34;<strong>Run NotesScreenTest ...</strong>&#34;. If you are not seeing this
-                option, make sure you have switched to the <strong>Android Instrumentation Tests</strong> Build Variant (see above).</p>
-            <p>
-                <img style="max-width: 624.00px" src="img/878432f526e72387.png">
-            </p>
-            <p>This approach works well if you are working on just a single test class, but doesn&#39;t scale if you want to run many different tests at the same time.</p>
-            <p>Let&#39;s set up a <em>build configuration</em> that will run all of our unit tests together</p>
-            <p>Fortunately, Android Studio makes this very easy! Just <strong>right click</strong> on the package name under <strong><code>androidTest</code></strong><code>/java/com.example.android.testing.notes</code> and select &#34;<strong>Create ‘Tests in com.exampl...&#39;&#34;</strong>.
-            </p>
-            <p>
-                <img style="max-width: 624.00px" src="img/a088986ce45d331d.png">
-            </p>
-            <p>In the next dialog we can configure our new build configuration (such as excluding tests or selecting a target device), but for now the <strong>default options</strong> are just fine.</p>
-            <p>Select our new run configuration from the run configuration menu, then select <strong>run</strong>:</p>
-            <p>
-                <img style="max-width: 313.00px" src="img/fe16736c6802abb1.png">
-            </p>
-            <p><strong>Keep an eye on your device - you can see Espresso execute our tests!</strong>
-            </p>
-            <p>We will have a few failing tests for now - that&#39;s what we will be implementing in the rest of the codelab!</p>
-            <p>Their status is displayed in the <strong>Run</strong> Panel that opened at the bottom of the screen:</p>
-            <p>
-                <img style="max-width: 510.00px" src="img/391e5d4c2d01e584.png">
-            </p>
-            <h3>ActivityTestRule: Functional testing for Android Activities</h3>
-            <p>The Android Testing Support Library <a href="https://google.github.io/android-testing-support-library/docs/rules/index.html" target="_blank">includes two JUnit Rules</a> that make it easy to write functional tests for <strong>Android Activities and Services</strong>.
-            </p>
-            <aside class="special">
-                <p>If you have used Android <code>TestCase</code>s (like <code>ActivityInstrumentationTestCase2</code> or <code>ServiceTestCase</code>) in the past, these have been deprecated. Instead you should switch to the new <code>ActivityTestRule</code>                    and <code>ServiceTestRule</code>.
-                </p>
-            </aside>
-            <p><a href="http://junit.org/apidocs/org/junit/rules/TestRule.html" target="_blank">JUnit test rules</a> allow the alteration of test methods. It is run before any test is executed and can be shared between projects and classes. </p>
-            <p>The <code>ActivityTestRule</code> is a rule that provides functional testing of a single Activity. The annotated Activity will be launched before each annotated <code>@Test</code> and before any annotated <code>@Before</code> methods. The
-                Activity is automatically terminated after the test is completed and all <code>@After</code> methods are finished.</p>
-            <h3>View Matching and Assertions with Espresso</h3>
-            <p>Espresso tests are written based on what a user might do while interacting with your app. The key concepts are locating and interacting with UI elements. The first step is to find a View you are interested in, then check its state or interact
-                with it.</p>
-            <p><a href="http://developer.android.com/reference/android/support/test/espresso/matcher/ViewMatchers.html" target="_blank"><code>ViewMatcher</code></a>s select Views in the current view hierarchy. The most common ones are <code>withId(...)</code>                (that finds Views with a specific ID) and <code>withText(...)</code> (that finds Views with a specific text), but there are many others, including matchers for state (selected, focused, enabled), content description and hierarchy (root
-                and children), <a href="http://developer.android.com/reference/android/support/test/espresso/matcher/ViewMatchers.html" target="_blank">among others</a>.</p>
-            <p><a href="http://developer.android.com/reference/android/support/test/espresso/action/ViewActions.html" target="_blank"><code>ViewAction</code></a>s are actions that can be performed on a View (for example click).</p>
-            <p><a href="http://developer.android.com/reference/android/support/test/espresso/assertion/ViewAssertions.html" target="_blank"><code>ViewAssertion</code></a>s are passed to the <code>check(...)</code> ViewAction to verify its state.</p>
-            <h2>Espresso Test 2: Adding a note</h2>
-            <p><strong>Continue editing the file </strong><code>app/src/androidTest/java/.../notes/NotesScreenTest.java</code> and comment in the code as you work through this section:</p>
-            <p>Let&#39;s go ahead and implement our first Espresso test from scratch: <code>addNoteToNotesList()</code>.</p>
-            <p>This test will open the ‘Add Note&#39; screen, enter some text, click the save button and verify that the text has been displayed.</p>
-            <p>First, make sure that the test has been set up, remove the <code>fail(...)</code> call and add some test data we will be checking:
-            </p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/NotesScreenTest.java" target="_blank">androidTest/.../NotesScreenTest.java</a></h3>
-            <pre><code>@Test
-public void addNoteToNotesList() throws Exception {
-    String newNoteTitle = &#34;Espresso&#34;;
-    String newNoteDescription = &#34;UI testing for Android&#34;;
-    ...
-}</code></pre>
-            <p>Similar to the previous Espresso test we looked at, we will first <strong>find the floating action button </strong>(<code>R.id.fab_add_notes</code>) and <strong>click</strong> it:</p>
-            <pre><code>// Click on the add note button
-onView(withId(R.id.fab_add_notes)).perform(click());</code></pre>
-            <p>Next (once the &#34;add note screen&#34; is open) we will <strong>enter our note text </strong>and <strong>save the note</strong>. (We don&#39;t need to wait for the new screen to open - Espresso will do this automatically for us. It waits
-                until a View with the id <code>R.id.fab_add_notes</code> can be found.)</p>
-            <pre><code>// Add note title and description
-onView(withId(R.id.add_note_title)).perform(typeText(newNoteTitle), closeSoftKeyboard()); // Type new note title
-onView(withId(R.id.add_note_description)).perform(typeText(newNoteDescription),
-       closeSoftKeyboard()); // Type new note description and close the keyboard
-
-// Save the note
-onView(withId(R.id.fab_add_notes)).perform(click());
-</code></pre>
-            <p>Next we are back on the &#34;Notes list screen&#34;. We will ask Espresso to scroll the RecyclerView until it can find a note in the list that contains our description and verify that it is in fact displayed on the screen:</p>
-            <aside class="special">
-                <p>Espresso has out-of-the-box support for most support and design support library features! This makes it very convenient for you to use Espresso with APIs like <code>RecyclerView</code> and makes for a great UI testing experience! We will
-                    cover some of those APIs later in the <strong>Espresso-Contrib</strong> section of this codelab.</p>
-            </aside>
-            <pre><code>// Scroll notes list to added note, by finding its description
-onView(withId(R.id.notes_list)).perform(
-       scrollTo(hasDescendant(withText(newNoteDescription))));
-
-// Verify note is displayed on screen
-onView(withItemText(newNoteDescription)).check(matches(isDisplayed()));</code></pre>
-            <p>This is our final implementation of the <code>addNoteToNotesList()</code> test:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/NotesScreenTest.java" target="_blank">androidTest/.../NotesScreenTest.java</a></h3>
-            <pre><code>@Test
-public void addNoteToNotesList() throws Exception {
-   String newNoteTitle = &#34;Espresso&#34;;
-   String newNoteDescription = &#34;UI testing for Android&#34;;
-
-   // Click on the add note button
-   onView(withId(R.id.fab_add_notes)).perform(click());
-
-   // Add note title and description
-   // Type new note title
-   onView(withId(R.id.add_note_title)).perform(typeText(newNoteTitle), closeSoftKeyboard());
-   onView(withId(R.id.add_note_description)).perform(typeText(newNoteDescription),
-           closeSoftKeyboard()); // Type new note description and close the keyboard
-
-   // Save the note
-   onView(withId(R.id.fab_add_notes)).perform(click());
-
-   // Scroll notes list to added note, by finding its description
-   onView(withId(R.id.notes_list)).perform(
-           scrollTo(hasDescendant(withText(newNoteDescription))));
-
-   // Verify note is displayed on screen
-   onView(withItemText(newNoteDescription)).check(matches(isDisplayed()));
-}
-</code></pre>
-            <p><strong>Run all Espresso tests again.</strong>
-            </p>
-            <p>Our test <code>NotesScreenTest#addNoteToNotesList()</code> is now no longer listed as failing:</p>
-            <p>
-                <img style="max-width: 511.00px" src="img/9101489b75784f66.png">
-            </p>
-            <p>You can also toggle view to display all passed tests using the button
-                <img style="max-width: 27.00px" src="img/f517f99823c7ff6f.png">.</p>
-            <h2>Espresso test 3: Clicking a note</h2>
-            <p>In the previous step we implemented a test for the notes Presenter that verified that calling the ‘open a note&#39; call told the View to display note details. Now we will implement an end-to-end UI test that verifies that clicking a note
-                will display the correct note on screen.</p>
-            <p>We will start again by implementing the test and then implementing the UI in the View.</p>
-            <aside class="special">
-                <p><strong>What happens in the app when you click a note? Let&#39;s recap:</strong>
-                </p>
-                <p>The presenter receives a callback to <code>openNoteDetails(...)</code> with a note. This is triggered from a callback from the RecyclerView that displays the grid of notes.</p>
-                <p>The presenter then calls <code>showNoteDetailUI</code> on the <code>View</code> with the ID of the note.</p>
-            </aside>
-            <h3>Switch build variant to mockDebug</h3>
-            <p>The test we are implementing now uses the mock source set to simulate a notes repository with a fake implementation. You need to switch your build variant to <code>mockDebug</code> to activate the correct tests. Our tests for the <code>mockDebug</code>                variant live in <code>app/src/andoidTestMock/...</code>.</p>
-            <p>
-                <img style="max-width: 513.50px" src="img/791d63860007f7b8.png">
-            </p>
-            <h3>Launch NoteDetailActivity with an Intent extra parameter</h3>
-            <p><strong>Edit the file </strong><code>app/src/</code><strong><code>androidTestMock</code></strong><code>/java/.../notedetail/</code><strong><code>NoteDetailScreenTest.java</code></strong><code> </code>and comment in the method as you work through
-                this section:</p>
-            <p>Our test is for the <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notedetail/NoteDetailActivity.java" target="_blank"><code>NoteDetailActivity</code></a><code>,</code><strong> we have already defined </strong>an
-                <a href="http://developer.android.com/reference/android/support/test/rule/ActivityTestRule.html" target="_blank"><code>ActivityTestRule</code></a><code> </code>for that Activity. The additional parameters specify the touch mode and if
-                the Activity should be automatically launched before each <code>@Test</code>. We&#39;ll need to supply an extra parameter to the Activity via a custom Intent, so we will handle the launch ourselves.</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/notedetail/NoteDetailScreenTest.java" target="_blank">androidTestMock/.../NoteDetailScreenTest.java</a></h3>
-            <pre><code>@Rule
-public ActivityTestRule&lt;NoteDetailActivity&gt; mNoteDetailActivityTestRule =
-        new ActivityTestRule&lt;&gt;(NoteDetailActivity.class, true /* Initial touch mode  */,
-                false /* Lazily launch activity */);</code></pre>
-            <p>Next, we will set up a method annotated with <code>@Before</code> that accesses this rule to create the intent (with a supplied note ID that we wish to display) that will start the Activity. The <code>ActivityTestRule</code> handles the creation
-                and the lifecycle of the Activity during the test. This set up is essentially similar to the call to <code>NoteDetailActivity.newInstance(...)</code> with a Note ID.</p>
-            <p>We are using the <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/mock/java/com/example/android/testing/notes/data/FakeNotesServiceApiImpl.java" target="_blank"><code>FakeNotesServiceApiImpl</code></a> to store
-                our notes and we have added one single note to our repository. Comment in the set up steps in <code>intentWithStubbedNoteId()</code>:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/notedetail/NoteDetailScreenTest.java" target="_blank">androidTestMock/.../NoteDetailScreenTest.java</a></h3>
-            <pre><code>@Before
-public void intentWithStubbedNoteId() {
-   // Add a note stub to the fake service api layer.
-   FakeNotesServiceApiImpl.addNotes(NOTE);
-
-   // Lazily start the Activity from the ActivityTestRule this time to inject the start Intent
-   Intent startIntent = new Intent();
-   startIntent.putExtra(NoteDetailActivity.EXTRA_NOTE_ID, NOTE.getId());
-   mNoteDetailActivityTestRule.launchActivity(startIntent);
-
-   registerIdlingResource();
-}</code></pre>
-            <h3>Implement the test NoteDetailScreenTest#noteDetails_DisplayedInUI</h3>
-            <p>Implement the test <code>noteDetails_DisplayedInUi()</code> that verifies that the title, description and image match what we have just added. (Remember, the <code>@Before</code> method starts the <code>NoteDetailActivity</code> to the note
-                we have just added.)</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/notedetail/NoteDetailScreenTest.java" target="_blank">androidTestMock/.../NoteDetailScreenTest.java</a></h3>
-            <pre><code>@Test
-public void noteDetails_DisplayedInUi() throws Exception {
-   // Check that the note title, description and image are displayed
-   onView(withId(R.id.note_detail_title)).check(matches(withText(NOTE_TITLE)));
-   onView(withId(R.id.note_detail_description)).check(matches(withText(NOTE_DESCRIPTION)));
-   onView(withId(R.id.note_detail_image)).check(matches(allOf(
-           hasDrawable(),
-           isDisplayed())));
-}</code></pre>
-            <h3>Run the UI Test and Implement the logic</h3>
-            <p>Next, run this test! Right click on the class <code>NoteDetailsScreenTest</code> and select <strong>Run</strong> &gt; <strong>Run &#34;NoteDetailsScreenTest&#34;</strong> or use the build configuration we have set up before.</p>
-            <p>The test will fail because we haven&#39;t implemented the logic in our View yet.</p>
-            <p>Switch to the <strong>Run</strong> view in Android Studio to see which test failed (and why it failed).</p>
-            <p>
-                <img style="max-width: 624.00px" src="img/cea9cb4ac54b733c.png">
-            </p>
-            <aside class="warning">
-                <p>You may see the following error when running this test:</p>
-                <p><code>Process finished with exit code 1</code>
-                </p>
-                <p><code>Class not found: &#34;com.example.android.testing.notes.notedetail.NoteDetailScreenTest&#34;Empty test suite.</code>
-                </p>
-                <p>If that happens you&#39;re very likely using the wrong test run configuration. Here is what the context menu should look like to create and run a instrumentation test run configuration:</p>
-                <p>
-                    <img style="max-width: 304.50px" src="img/1d46c998bfb0251a.png">
-                </p>
-                <p>Try to run all tests in the package <strong><code>com.example.android.testing.notes</code></strong>: Right click on the package name under <code>app &gt; src &gt; androidTestMock &gt; java</code> and select <code>&#34;Run tests in ‘com.example...</code>&#39;&#34;
-                    and you should see the instrumentation test run configuration from the first screenshot.</p>
-                <p>See the <strong>Troubleshooting section</strong> at the end if you have trouble running this test. (You may need to uninstall the previous build first - run the <code>uninstallAll</code> gradle task.)</p>
-            </aside>
-            <p>The test will fail with an error similar to this:</p>
-            <pre>android.support.test.espresso.base.DefaultFailureHandler$AssertionFailedWithCauseError: &#39;with text: is &#34;ATSL&#34;&#39; doesn&#39;t match the selected view.
-Expected: with text: is &#34;ATSL&#34;
-Got: &#34;AppCompatTextView{id=2131492979, res-name=note_detail_title, visibility=VISIBLE, width=0, height=103, has-focus=false, has-focusable=fals
-&lt;... stacktrace ...&gt;</pre>
-            <p>This error tells us that the title <code>TextView</code> does not contain the expected text we have set on it.</p>
-            <p>We haven&#39;t implemented the hooks for the <code>NoteDetailContract.View</code> yet which handles the display of note details.</p>
-            <p><strong>Edit the file </strong><code>app/src/main/java/.../noteDetail/NoteDetailFragment.java</code><strong> to add the missing logic</strong>:</p>
-            <p>Implement the methods: <code>setProgressIndicator,</code> <code>hideDescription,</code> <code>hideTitle,</code> <code>showDescription</code> and <code>showTitle:</code>
-            </p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notedetail/NoteDetailFragment.java" target="_blank">NoteDetailFragment.java</a></h3>
-            <pre><code>@Override
-public void setProgressIndicator(boolean active) {
-   if (active) {
-       mDetailTitle.setText(&#34;&#34;);
-       mDetailDescription.setText(getString(R.string.loading));
-   }
-}
-
-@Override
-public void hideDescription() {
-   mDetailDescription.setVisibility(View.GONE);
-}
-@Override
-public void hideTitle() {
-   mDetailTitle.setVisibility(View.GONE);
-}
-
-@Override
-public void showDescription(String description) {
-   mDetailDescription.setVisibility(View.VISIBLE);
-   mDetailDescription.setText(description);
-}
-
-@Override
-public void showTitle(String title) {
-   mDetailTitle.setVisibility(View.VISIBLE);
-   mDetailTitle.setText(title);
-}</code></pre>
-            <p>Run the test again (<code>NoteDetailScreenTest</code>) - the test <code>noteDetails_DisplayedInUi</code> now passes:</p>
-            <p>
-                <img style="max-width: 510.00px" src="img/bd60745b3571c66b.png">
-            </p>
-            <h2>Troubleshooting</h2>
-            <p>A common error while running your tests in this codelab setup is: </p>
-            <aside class="warning">
-                <p><code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code>
-                </p>
-            </aside>
-            <p>If you run into this error uninstall all artifacts from your test device using Android studio. Open the <strong>Gradle view</strong> on the right hand side of Android studio. Open <strong>:app </strong>&gt; <strong>Tasks &gt; install</strong>                and run the
-                <strong>uninstallAll</strong> task by double clicking it.</p>
-            <p>
-                <img style="max-width: 413.74px" src="img/6b558eedd0d99284.png">
-            </p>
-
-
-        </google-codelab-step>
-
-        <google-codelab-step label="Bonus: Espresso-Intents" duration="10">
-            <p><strong>Continue with your existing Android Studio project for this section.</strong>
-            </p>
-            <aside class="special">
-                <p><strong>If you would like to start fresh for this section, continue from snapshot ‘step-8&#39;:<br></strong>Open the directory named <strong>step-8</strong> from <a href="https://github.com/googlecodelabs/android-testing/raw/master/android-testing-checkpoints.zip"
-                        target="_blank">the zip file</a> in Android Studio or checkout the branch <code>step-8</code> directly from github:
-                    <br><code>git clone https://github.com/googlecodelabs/android-testing.git -b step-8</code>
-                </p>
-            </aside>
-            <p><a href="https://google.github.io/android-testing-support-library/docs/espresso/intents/index.html" target="_blank">Espresso-Intents</a> is an extension to Espresso that focuses on the validation and mocking of Intents. It has a similar API
-                to Mockito (that we have explored earlier for mocking Java code), but for stubbing Intents.</p>
-            <p>If your app takes advantage of the full power of the Android platform by <em>intenting</em> out to other applications or the platform, you can focus on your own functionality and rely on the platform and other apps to function as expected.
-                With Espresso-Intents you can validate your Intents or even stub out Intents by responding with your own results.</p>
-            <h2>Intent Matching</h2>
-            <p>Espresso-Intents adds the functionality to intercept Intents based on some matching criteria. These matchers are defined via <a href="https://code.google.com/p/hamcrest/" target="_blank">Hamcrest Matchers</a> (that we briefly explored earlier
-                in the mocking section), but usually the <a href="http://developer.android.com/reference/android/support/test/espresso/intent/matcher/IntentMatchers.html" target="_blank">basic built-in matchers</a> provide sufficient functionality: you
-                can match based on action, data, extras and categories or any combination thereof.</p>
-            <h2>Intent Stubbing</h2>
-            <p>Espresso-Intents also adds functionality to provide stub implementations to matching intents, by intercepting Intents and providing a response for Activities that are started with <code>startActivityForResult(...)</code>
-            </p>
-            <p>Clicking on the &#34;Add image&#34; button on the &#34;Add Note&#34; screen sends an Intent to the camera application on the device to take a photo. The image is then returned back to the app. </p>
-            <p>We will write a test that verifies that after a photo is taken from that screen, its thumbnail is displayed in our app.</p>
-            <h3>Switch to the mockDebug Build Variant</h3>
-            <p>Make sure to select the the <strong>mockDebug</strong> build variant:</p>
-            <p>
-                <img style="max-width: 416.00px" src="img/d54a3100a57e43a1.png">
-            </p>
-            <h3>Implement AddNoteScreenTest#addImageToNote_ShowsThumbnailInUi with Espresso-Intents</h3>
-            <p>Edit the file <code>app/src/androidTestMock/java/.../addnote/AddNoteScreenTest.java</code> and comment in the following lines as you work through this section:</p>
-            <p>First we have already set up an <code>IntentsTestRule</code>. It is an extension of <code>ActivityTestRule</code> that we have used earlier and specifically built for using the Espresso-Intents API in functional UI tests. It initialises Espresso-Intents
-                before each <code>@Test</code> and releases it after each run.</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/addnote/AddNoteScreenTest.java" target="_blank">androidTestMock/.../AddNoteScreenTest.java</a></h3>
-            <pre><code>@Rule
-public IntentsTestRule&lt;NotesActivity&gt; mNotesIntentsTestRule = new IntentsTestRule&lt;&gt;(NotesActivity.class);</code></pre>
-            <p>Next, we will implement the test <code>addImageToNote_ShowsThumbnailUi()</code>.
-                <br>Remove the call to <code>fail(...)</code>.</p>
-            <pre><code>@Test
-public void addImageToNote_ShowsThumbnailInUi() {
-    ...
-}</code></pre>
-            <p>We will stub out all Intents that match the <code>MediaStore.ACTION_IMAGE_CAPTURE</code> action and always respond with a valid (<code>RESULT_OK)</code> <code>ActivityResult</code> (provided by a call to <code>createImageCaptureActivityResultStub()</code>                ).</p>
-            <p>First we will create the result object:</p>
-            <pre><code>ActivityResult result = createImageCaptureActivityResultStub();</code></pre>
-            <p>Next we instruct Espresso to respond to all intents that have the <code>MediaStore.ACTION_IMAGE_CAPTURE</code> action with the result object we have just created:</p>
-            <pre><code>intending(hasAction(MediaStore.ACTION_IMAGE_CAPTURE)).respondWith(result);</code></pre>
-            <p>Next we verify that no thumbnail image is being shown as a sanity check - no image has been taken yet.</p>
-            <pre><code>// Check thumbnail view is not displayed
-        onView(withId(R.id.add_note_image_thumbnail)).check(matches(not(isDisplayed())));
-
-selectTakeImageFromMenu();
-</code></pre>
-            <p>We select the &#34;Add image&#34; option in the menu using a short helper method:</p>
-            <pre><code>selectTakeImageFromMenu();</code></pre>
-            <p><code>selectTakeImageFromMenu()</code> clicks the &#34;Add image&#34; button that fires off a <code>MediaStore.ACTION_IMAGE_CAPTURE</code> Intent. (If you are curious, we are using a convenience method called <code>openActionBarOverflowOrOptionsMenu(...)</code>                from Espresso to open the menu.)</p>
-            <p>If the Intent was set up correctly, it will be captured by our test and a valid result will be returned. If the Intent does not match our expected value, it will not be matched and an assertion exception would be thrown. </p>
-            <p>Finally we check that the thumbnail is now being displayed:</p>
-            <pre><code>onView(withId(R.id.add_note_image_thumbnail))
-.check(matches(allOf(
-    hasDrawable(),
-    isDisplayed())));</code></pre>
-            <p>This is our final <code>addImageToNote_ShowsThumbnailInUi()</code> test:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTestMock/java/com/example/android/testing/notes/addnote/AddNoteScreenTest.java" target="_blank">androidTestMock/.../AddNoteScreenTest.java</a></h3>
-            <pre><code>@Test
-public void addImageToNote_ShowsThumbnailInUi() {
-   // Create an Activity Result which can be used to stub the camera Intent
-   ActivityResult result = createImageCaptureActivityResultStub();
-   // If there is an Intent with ACTION_IMAGE_CAPTURE, intercept the Intent and respond with
-   // a stubbed result.
-   intending(hasAction(MediaStore.ACTION_IMAGE_CAPTURE)).respondWith(result);
-
-   // Check thumbnail view is not displayed
-   onView(withId(R.id.add_note_image_thumbnail)).check(matches(not(isDisplayed())));
-
-   selectTakeImageFromMenu();
-
-   // Check that the stubbed thumbnail is displayed in the UI
-   onView(withId(R.id.add_note_image_thumbnail))
-           .perform(scrollTo()) // Scroll to thumbnail
-           .check(matches(allOf(
-                   hasDrawable(), // Check ImageView has a drawable set with a custom matcher
-                   isDisplayed())));
-}</code></pre>
-            <p><strong>Run the test! </strong>
-            </p>
-            <p>It should pass:</p>
-            <p>
-                <img style="max-width: 506.00px" src="img/2c24d21a0543f0a0.png">
-            </p>
-            <p>By using the full power of the Android platform (and being a good app citizen), you can write tests that focus on your own functionality, without having to worry about functionality of the platform.</p>
-
-
-        </google-codelab-step>
-
-        <google-codelab-step label="Bonus: Espresso-Contrib" duration="12">
-            <p><strong>Continue with your existing Android Studio project for this section.</strong>
-            </p>
-            <aside class="special">
-                <p><strong>If you would like to start fresh for this section, continue from snapshot ‘step-9&#39;:<br></strong>Open the directory named <strong>step-9</strong> from <a href="https://github.com/googlecodelabs/android-testing/raw/master/android-testing-checkpoints.zip"
-                        target="_blank">the zip file</a> in Android Studio or checkout the branch <code>step-9</code> directly from github:
-                    <br><code>git clone https://github.com/googlecodelabs/android-testing.git -b step-9</code>
-                </p>
-            </aside>
-            <p>Espresso-contrib is an extension to the Espresso framework that contains a few additional, useful features that will help you write great tests with Espresso. Part of this component is support for RecyclerView that enables you to write <code>ViewMatcher</code>s
-                for items or perform specific <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/RecyclerViewActions.PositionableRecyclerViewAction.html" target="_blank"><code>RecyclerViewAction</code></a>s (such as
-                scrolling to a specific item). It also contains explicit support for the navigation drawer through <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerActions.html" target="_blank"><code>DrawerActions</code></a>                and <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html" target="_blank"><code>DrawerMatchers</code></a><code>.</code>
-            </p>
-            <h2>Implement Espresso tests for the Navigation Drawer</h2>
-            <p>Let&#39;s use some of these features of Espresso-contrib to write a test that verifies that opening the navigation drawer and selecting the ‘Statistics&#39; option opens that screen and hides the drawer when selected.</p>
-            <h3>Switch to the prodDebug build variant</h3>
-            <p>This test is using the main implementation and does not rely on the mock target. Switch the build variant to <strong>prodDebug</strong>:</p>
-            <p>
-                <img style="max-width: 415.00px" src="img/62ceca40c67596eb.png">
-            </p>
-            <h3>Implement AppNavigationTest#clickOnAndroidHomeIcon_OpensNavigation</h3>
-            <p>Edit the file <code>app/src/androidTest/java/.../notes/AppNavigationTest.java</code> and comment in the following lines as you work through this section:</p>
-            <p>Let&#39;s add a new test called <code>AppNavigationTest</code>.</p>
-            <p>Make sure it is setup to run with the JUnit4 runner and is defined as a large test:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/AppNavigationTest.java" target="_blank">androidTest/.../AppNavigationTest.java</a></h3>
-            <pre><code>@RunWith(AndroidJUnit4.class)
-@LargeTest
-public class AppNavigationTest {
-...
-}</code></pre>
-            <aside class="special">
-                <p><strong>Test Qualifiers</strong>
-                </p>
-                <p>Android test size annotations let you classify how long a test should take to run, and consequently, how frequently you can run the test. The annotations are defined in the android.test.suitebuilder.annotation package. </p>
-                <ul>
-                    <li><code>@SmallTest</code>: <em>&lt; 100ms execution time</em>, should be run very frequently, only uses local dependencies, no resource access</li>
-                    <li><code>@MediumTest</code>: <em>&lt; 2s execution time</em>, focus on limited subset of app components, no external resource access, mocking external dependencies</li>
-                    <li><code>@LargeTest</code>: <em>&gt; 2s execution time</em>, makes use of all platform resources, including external communications
-                    </li>
-                </ul>
-                <p>Well organized tests suites using test size annotations can improve your efficiency and productivity and establish a common understanding within your team on when to use the right test annotation for the job.</p>
-                <p>You can find out more in <a href="https://plus.google.com/+AndroidDevelopers/posts/TPy1EeSaSg8" target="_blank">this excellent #Protip on +Android Developers</a>.</p>
-            </aside>
-            <h3>Espresso-Intents Test 1: Clicking &#34;Navigate up&#34; opens the Navigation Drawer</h3>
-            <p>Let&#39;s write a small test that verifies that clicking the ‘Home&#39; icon on the start screen opens the navigation drawer.</p>
-            <p>Implement <code>AppNavigationTest#clickOnAndroidHomeIcon_OpensNavigation()</code>, which:</p>
-            <ul>
-                <li>Finds the navigation drawer layout and checks that it is closed (using the special <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html#isClosed(int)" target="_blank"><code>isClosed()</code></a>                    matcher) </li>
-                <li>Clicks the &#34;navigate up&#34; button (we can find it by matching its content description - it is &#34;Navigate up&#34;.)</li>
-                <li>Verifies that the drawer is now open by using the <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html#isOpen(int)" target="_blank"><code>isOpen(...)</code></a> matcher.</li>
-            </ul>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/AppNavigationTest.java" target="_blank">androidTest/.../AppNavigationTest.java</a></h3>
-            <pre><code>@Test
-public void clickOnAndroidHomeIcon_OpensNavigation() {
-   // Check that left drawer is closed at startup
-   onView(withId(R.id.drawer_layout))
-           .check(matches(isClosed(Gravity.LEFT))); // Left Drawer should be closed.
-
-   // Open Drawer
-   onView(withContentDescription(&#34;Navigate up&#34;)).perform(click());
-
-   // Check if drawer is open
-   onView(withId(R.id.drawer_layout))
-           .check(matches(isOpen(Gravity.LEFT))); // Left drawer is open open.
-}</code></pre>
-            <p><strong>Run the test - clickOnAndroidHomeIcon_OpensNavigation should complete successfully:</strong>
-            </p>
-            <p>
-                <img style="max-width: 536.00px" src="img/f8e96fe46defff39.png">
-            </p>
-            <h3>Espresso-Intents Test 2: Clicking the statistics option in navigation drawer opens the statistics screen</h3>
-            <p>Next, implement our test called <code>clickOnStatisticsNavigationItem_ShowsStatisticsScreen()</code> in the file using the drawer support from Espresso-contrib. </p>
-            <p>
-                <img style="max-width: 297.10px" src="img/a081fdc23ff5f548.png">
-            </p>
-            <p>Edit the file <code>app/src/androidTest/java/.../notes/AppNavigationTest.java</code> and comment in the following lines as you work through this section:</p>
-            <p>We will be using a custom <code>ViewAction</code> that we have implemented for you: <code>navigateTo(...)</code>. It provides an easy interface to match <code>MenuItem</code>s in a <code>NavigationView</code>. Here we will be using it for
-                the navigation drawer to find a specific item that we want to select. You can find its implementation in <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/custom/action/NavigationViewActions.java"
-                    target="_blank"><code>app/src/androidTest/.../action/NavigationViewActions.java</code></a> if you want to find out how it works exactly.</p>
-            <ul>
-                <li>Find the navigation drawer layout, check that it is closed (using the special <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerMatchers.html#isClosed(int)" target="_blank"><code>isClosed()</code></a>                    matcher) and trigger its <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/DrawerActions.html#open(int)" target="_blank"><code>open(...)</code></a> action to open the drawer.</li>
-                <li>Now that the drawer is open we need to find the &#34;statistics&#34; item in the drawer and select it. We are using our own <code>navigateTo(...)</code> matcher on the DrawerLayout to find the statistics item by its ID.</li>
-                <li>Lastly, we verify that the correct text message &#34;No statistics&#34; is displayed. We are doing this by loading the text resource from the app itself (by getting the Android <code>Context</code> from the <a href="http://developer.android.com/reference/android/support/test/InstrumentationRegistry.html"
-                        target="_blank"><code>InstrumentationRegistry</code></a>) and checking that the shown <code>TextView</code> displays the correct text.</li>
-            </ul>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/androidTest/java/com/example/android/testing/notes/notes/AppNavigationTest.java" target="_blank">androidTest/.../AppNavigationTest.java</a></h3>
-            <pre><code>@Test
-public void clickOnStatisticsNavigationItem_ShowsStatisticsScreen() {
-   // Open Drawer to click on navigation.
-   onView(withId(R.id.drawer_layout))
-           .check(matches(isClosed(Gravity.LEFT))) // Left Drawer should be closed.
-           .perform(open()); // Open Drawer
-
-   // Start statistics screen.
-   onView(withId(R.id.nav_view))
-           .perform(navigateTo(R.id.statistics_navigation_menu_item));
-
-   // Check that statistics Activity was opened.
-   String expectedNoStatisticsText = InstrumentationRegistry.getTargetContext()
-           .getString(R.string.no_statistics_available);
-   onView(withId(R.id.no_statistics)).check(matches(withText(expectedNoStatisticsText)));
-}</code></pre>
-
-
-        </google-codelab-step>
-
-        <google-codelab-step label="Bonus: Idling resources" duration="10">
-            <p>One of the key parts of Espresso is its ability to synchronize all test actions. Espresso waits until the UI is idle before it moves to the next operation. Likewise, it waits for AsyncTask background operations to complete. In general, this
-                should address the majority of test synchronizations in your application. If you have written UI tests before, you will appreciate this feature - there&#39;s no need to add waits or synchronization points to your app!</p>
-            <p>However, sometimes it is not possible to rely on automatic synchronisation, for instance when your app does background operations via non-standard means (managing threads directly or using custom Services). If you have run into a situation
-                where you cannot rely on Espresso to automatically handle the synchronization for you, you can use <strong>idling resources</strong> and still rely on Espresso for synchronization. </p>
-            <p>As you use a resource that needs to be synchronized, register it with Espresso using <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/core/src/main/java/android/support/test/espresso/Espresso.java"
-                    target="_blank"><code>Espresso.registerIdlingResource</code></a> in your test set up (usually in your <code>@Before</code> method), and implement the <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/idling-resource/src/main/java/android/support/test/espresso/IdlingResource.java"
-                    target="_blank"><code>IdlingResource</code></a> interface to track their use.</p>
-            <h2>Idling Resources in Practice</h2>
-            <p>In our app we have wrapped the calls to <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/util/SimpleCountingIdlingResource.java" target="_blank"><code>Simple</code><code>CountingIdlingResource</code></a>                (which is a simple implementation of the
-                <code>IdlingResource</code> interface) in the class <code>EspressoIdlingResource</code> that is used across the entire application. This makes it easy to use the idling resources across the entire app.</p>
-            <aside class="special">
-                <p>In case you don&#39;t want to write your own, Espresso got you covered. Have a look at <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/CountingIdlingResource.html" target="_blank">CountingIdlingResource</a>                    an <code>IdlingResource</code> provided by Espresso and maintains an internal counter that is exposed via <code>increment()</code> and <code>decrement()</code> calls.</p>
-            </aside>
-            <p>You can see it in action in the <a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notes/NotesPresenter.java" target="_blank"><code>NotesPresenter</code></a>, where we
-                increment the counter just before we make an asynchronous call to access the notes api to load in a list of notes. This signals to Espresso that the app is busy and holds all further execution of Espresso commands until the app is marked
-                as idle again after the callback returns:</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/src/main/java/com/example/android/testing/notes/notes/NotesPresenter.java" target="_blank">NotesPresenter.java</a></h3>
-            <pre><code>@Override
-public void loadNotes(boolean forceUpdate) {
-    mNotesView.setProgressIndicator(true);
-    if (forceUpdate) {
-        mNotesRepository.refreshData();
-    }
-
-    // The network request might be handled in a different thread so make sure Espresso knows
-    // that the app is busy until the response is handled.
-    EspressoIdlingResource.increment(); // App is busy until further notice
-
-    mNotesRepository.getNotes(new NotesRepository.LoadNotesCallback() {
-        @Override
-        public void onNotesLoaded(List&lt;Note&gt; notes) {
-            EspressoIdlingResource.decrement(); // Set app as idle.
-            mNotesView.setProgressIndicator(false);
-            if (notes.isEmpty()) {
-                mNotesView.showNotesEmptyPlaceholder();
+    <script type="text/javascript">
+        function showInstructions(system) {
+            $("[id^=system-]").hide();
+            if (system == "linux") {
+                $("[id^=system-linux]").show();
+            } else if (system == "mac") {
+                $("[id^=system-mac]").show();
             } else {
-                mNotesView.showNotes(notes);
+                $("[id^=system-windows]").show();
+            }
+            $("[id^=instructions-option]").val(system);
+        }
+
+        function loadDefaultInnstruction() {
+            if (navigator.appVersion.indexOf("Linux") != -1) {
+                showInstructions("linux");
+            } else if (navigator.appVersion.indexOf("Mac") != -1) {
+                showInstructions("mac");
+            } else {
+                showInstructions("windows");
             }
         }
-    });
-}
+
+        $(document).ready(function() {
+            $(function() {
+                $.each(document.images, function() {
+                    var that = this;
+                    var src = $(that).attr('src');
+                    if (!src.length > 0) {
+                        var fsrc = $(that).attr('fsrc');
+                        var img = new Image();
+                        img.src = fsrc;
+                        $(img).load(function() {
+                            that.src = this.src;
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body unresolved class="fullbleed" onload="loadDefaultInnstruction();">
+
+    <google-codelab title="Android UI Testing" environment="web" feedback-link="#">
+        <google-codelab-step label="Basic concept about Android" duration="45">
+            <h2>Activity, Service & Intent</h2>
+            <h3>Activity</h3>
+            <p>An activity is the entry point for interacting with the user. It represents a single screen with a user interface. For example, an email app might have one activity that shows a list of new emails, another activity to compose an email, and
+                another activity for reading emails. </p>
+            <img fsrc="img/activity-screen-1.jpg" />
+            <img fsrc="img/activity-screen-2.jpg" />
+            <p>If you want to know more about Activity, click <a href="https://developer.android.com/reference/android/app/Activity.html">here</a></p>
+            <h3>Service</h3>
+            Services A service is a general-purpose entry point for keeping an app running in the background for all kinds of reasons. It is a component that runs in the background to perform long-running operations or to perform work for remote processes. A service
+            does not provide a user interface. For example, a service might play music in the background while the user is in a different app:
+            <img fsrc="img/banner_service.png" />
+            <p>If you want to know more about Service, click <a href="https://developer.android.com/reference/android/app/Service.html">here</a></p>
+            <h3>Intent</h3>
+            <img fsrc="img/intent.png" />
+            <p> Activity & Service are activated by an asynchronous message called an <i>intent</i>.It defines the action to perform (for example, to view or send something) and may specify the URI of the data to act on, among other things that the component
+                being started might need to know. </p>
+            <p>If you want to know more about Intent, click
+                <a href="https://developer.android.com/reference/android/content/Intent.html">here</a>
+            </p>
+            <h2>Install Android Studio</h2>
+            <p> Android Studio is the official IDE for Android, you can download it from <a href="https://developer.android.com/studio/index.html">here</a> </p>
+            <div class="instruction-select">
+                <p><strong>Instructions for</strong></p>
+                <select id="instructions-option" onchange="showInstructions(this.value)" style="padding:4px">
+                    <option value="windows">Windows</option>
+                    <option value="mac">Mac</option>
+                    <option value="linux">Linux</option>
+                </select>
+            </div>
+            <div id="system-windows" style="display: none;">
+
+                <p>To install Android Studio on Windows, proceed as follows:</p>
+                <ol>
+                    <li>Launch the <code>.exe</code> file you downloaded.</li>
+                    <li>Follow the setup wizard to install Android Studio and any necessary SDK tools.
+                    </li>
+                </ol>
+
+                <p>That's it! The following video shows each step of the recommended setup procedure.</p>
+
+                <video controls style="max-width: 737.14px;" preload="none">
+                <source src="https://storage.googleapis.com/androiddevelopers/videos/studio-install-windows.mp4" type="video/mp4">
+                </video>
+
+                <p>As new tools and other APIs become available, Android Studio tells you with a pop-up, or you can check for updates by clicking <strong>Help &gt;
+Check for Update</strong>.</p>
+
+
+            </div>
+            <div id="system-mac" style="display: block;">
+
+                <p>To install Android Studio on your Mac, proceed as follows:</p>
+
+                <ol>
+                    <li>Launch the Android Studio DMG file.</li>
+                    <li>Drag and drop Android Studio into the Applications folder, then launch Android Studio.</li>
+                    <li>Select whether you want to import previous Android Studio settings, then click <strong>OK</strong>.</li>
+                    <li>The Android Studio Setup Wizard guides you though the rest of the setup, which includes downloading Android SDK components that are required for development.</li>
+                </ol>
+
+                <p>That's it! The following video shows each step of the recommended setup procedure.</p>
+
+                <video controls style="max-width: 737.14px;">
+                <source src="https://storage.googleapis.com/androiddevelopers/videos/studio-install-mac.mp4" type="video/mp4">
+                </video>
+
+                <p>
+                    As new tools and other APIs become available, Android Studio tells you with a pop-up, or you can check for updates by clicking <strong>Android Studio
+&gt; Check for Updates</strong>.</p>
+
+            </div>
+            <div id="system-linux" style="display: none;">
+
+
+                <p>To install Android Studio on Linux, proceed as follows:</p>
+
+                <ol>
+                    <li>Unpack the <code>.zip</code> file you downloaded to an appropriate location for your applications, such as within
+                        <code>/usr/local/</code> for your user profile, or <code>/opt/</code> for shared users.
+                    </li>
+                    <li>To launch Android Studio, open a terminal, navigate to the <code>android-studio/bin/</code> directory, and execute <code>studio.sh</code>.
+                    </li>
+                    <li>Select whether you want to import previous Android Studio settings or not, then click <strong>OK</strong>.</li>
+                    <li>The Android Studio Setup Wizard guides you though the rest of the setup, which includes downloading Android SDK components that are required for development.</li>
+
+                </ol>
+
+                <p class="note"><strong>Tip:</strong> To make Android Studio available in your list of applications, select
+                    <b>Tools &gt; Create Desktop Entry</b> from the Android Studio menu bar.</p>
+
+                <div class="caution">
+                    <p><strong>Required libraries for 64-bit machines:</strong></p>
+                    <p>If you are running a 64-bit version of Ubuntu, you need to install some 32-bit libraries with the following command:</p>
+                    <pre class="prettyprint"><span class="pln">sudo apt</span><span class="pun">-</span><span class="kwd">get</span><span class="pln"> install libc6</span><span class="pun">:</span><span class="pln">i386 libncurses5</span><span class="pun">:</span><span class="pln">i386 libstdc</span><span class="pun">++</span><span class="lit">6</span><span class="pun">:</span><span class="pln">i386 lib32z1 libbz2</span><span class="pun">-</span><span class="lit">1.0</span><span class="pun">:</span><span class="pln">i386</span></pre>
+                    <p>If you are running 64-bit Fedora, the command is:</p>
+                    <pre class="prettyprint"><span class="pln">sudo yum install zlib</span><span class="pun">.</span><span class="pln">i686 ncurses</span><span class="pun">-</span><span class="pln">libs</span><span class="pun">.</span><span class="pln">i686 bzip2</span><span class="pun">-</span><span class="pln">libs</span><span class="pun">.</span><span class="pln">i686</span></pre>
+                </div>
+
+                <p>That's it! The following video shows each step of the recommended setup procedure.</p>
+                <video controls style="max-width: 737.14px;">
+                <source src="https://storage.googleapis.com/androiddevelopers/videos/studio-install-linux.mp4" type="video/mp4">
+                </video>
+                <p>As new tools and other APIs become available, Android Studio tells you with a pop-up, or you can check for updates by clicking <strong>Help &gt;
+Check for Update</strong>.</p>
+
+            </div>
+            <h2>Create your first project</h2>
+            <p>Open Android Studio then perform the following step to create an android project</p>
+            <img fsrc="img/android-new-project.jpg" />
+            <ol>
+                <li>Click on <i>Start a new Android Studio Project</i></li>
+                <li>Type application's name</li>
+                <li>Change application's doman if you want</li>
+                <li>Click on Next</li>
+                <li>Add more platform, select minimum SDK, or just click on Next</li>
+                <li>Select your first Activity or just click on Next</li>
+                <li>Change your activity's name or just click on Finish</li>
+            </ol>
+            <p>Using multiple flavors, a developer can easily build different versions of a single app. A flavor can specify features, device and API requirements, minimum and target API levels among others.</p>
+            <p>In addition to flavors, there is another very important concept regarding building android apps, called “build types”. A build type applies settings relating to the build and packaging of the app, such as if it’s debuggable.</p>
+            <p>The combination of build types and build flavor forms a <i>Build Variants</i>.</p>
+            <p>To add a new Flavor</p>
+            <p>Click on Build-> Edit Flavors</p>
+            <img fsrc="img/add-flavor.jpg" />
+            <p>You can edit the flavor name, application id, add a new signing config... Click on <i>OK</i> when you're done </p>
+            <img fsrc="img/edit-flavor.jpg" />
+            <p>To change <i>Build Variant</i>, perform the following step:</p>
+            <ul>
+                <li>Click on Build Variant</li>
+                <li>Change build variant from dropdown menu</li>
+            </ul>
+            <img fsrc="img/change-variant.jpg" />
+            <h2>How to use UIAutomatorviewer to get view's hierarchy</h2>
+            The uiautomatorviewer tool provides a convenient visual interface to inspect the layout hierarchy and view the properties of UI components that are visible on the foreground of the device. This information lets you create more fine-grained tests using
+            UI Automator. For example, you can create a UI selector that matches a specific visible property.
+            <br>To launch the uiautomatorviewer tool:
+            <ul>
+                <li>Launch the target app on a physical device.</li>
+                <li>Connect the device to your development machine.</li>
+                <li>Open a terminal window and navigate to the &lt;android-sdk&gt;/tools/ directory.</li>
+                <i>use <b>cd</b> command to change directory</i>
+                <pre><code>cd /PATH/TO/YOUR/ANDROID-SDK/
+cd tools/
 </code></pre>
-
-
-        </google-codelab-step>
-
-        <google-codelab-step label="Bonus: Code Coverage" duration="10">
-            <p><a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank">Code coverage</a> describes how well your application is covered by tests. This can be useful to find areas of your app that aren&#39;t tested well enough (and could contain
-                potential bugs).</p>
-            <h2>Code Coverage for Unit Tests</h2>
-            <p>Android studio has built-in support to generate code coverage reports from unit tests. We&#39;ll look at instrumentation tests in the next section. Note that these reports are independent of each other and are not merged.</p>
-            <p>Create a run configuration for the unit tests. In the test source set, under java, select the package name: <strong>com.example.android.testing.notes</strong>. Right click on the package name and select &#34;<strong>Create tests in com.example.android.testing.notes</strong>&#34;.
-                (If you have previously created a test configuration, enable it by clicking on &#34;Select tests in com.example...&#34; In the next step, you need to edit the existing test configuration: <code>Run</code> &gt; <code>Edit configurations</code>                )</p>
-            <p>
-                <img style="max-width: 576.30px" src="img/63f8eca97aebcd6.png">
-            </p>
-            <p>On the next dialog, select the <strong>&#34;Code Coverage</strong>&#34; tab. </p>
-            <p>Select the &#34;IntelliJ IDEA&#34; coverage runner. Accept the (empty) default setting for the &#34;packages and classes to record coverage data&#34;. (You could go ahead and exclude the platform generated files (R.java and BuildConfig.java)
-                by specifying the packages in the app specifically, but that&#39;s not required.)</p>
-            <p>Click OK to create the build configuration.</p>
-            <p>
-                <img style="max-width: 525.13px" src="img/ea90f941e4524d27.png">
-            </p>
-            <p>Next, run the code coverage report. In the build configuration, select the new build configuration we have just created, and click the code coverage button
-                <img style="max-width: 27.42px" src="img/36ba3b321e7c4e64.png"> to generate the report.</p>
-            <p>
-                <img style="max-width: 624.00px" src="img/d14bfbf66697c55c.png">
-            </p>
-            <p>When the task finishes, the code coverage report will be displayed in a panel in the right hand side. (You may have to expand the panel by dragging on its side):</p>
-            <p>
-                <img style="max-width: 588.00px" src="img/346f02582a89cc93.png">
-            </p>
-            <p>On this panel you can navigate through each feature (which is contained in its own package) and you can even drill down all the way to exact methods. For example, navigate to the <code>notedetail</code> package (<code>com</code> &gt; <code>example</code>                &gt; <code>android</code> &gt; <code>testing</code> &gt; <code>notes</code>) to see code coverage for the notes detail feature. Clicking on a class opens the editor for that file - code coverage is displayed in red and green bars on the
-                left hand side:</p>
-            <p>
-                <img style="max-width: 212.00px" src="img/cbc5212b9a0bb123.png">
-            </p>
-            <h2>Code Coverage for Instrumentation Tests</h2>
-            <p>There is no support for showing code coverage reports for instrumentation tests in Android Studio. </p>
-            <p>First we need to update our gradle build configuration to enable code coverage reports for debug builds.</p>
-            <p>Open the file <code>app/build.gradle</code> and comment in the following line within the <code>android</code> section.</p>
-            <h3><a href="https://github.com/googlecodelabs/android-testing/blob/master/app/build.gradle" target="_blank">app/build.gradle</a></h3>
-            <pre><code>buildTypes {
-    debug {
-        // Run code coverage reports by default on debug builds.
-        testCoverageEnabled = true
-    }
-}</code></pre>
-            <p>This enables a new gradle task that will generate a code coverage report for debug builds.</p>
-            <p>In Android Studio, sync your gradle configuration with your project (
-                <img style="max-width: 20.00px" src="img/85fdea314794cc0d.png"> in the toolbar) to see the new *CoverageReport gradle tasks.</p>
-            <p>Next, run the gradle task <strong><code>createMockDebugAndroidTestCoverageReport</code></strong> to generate the coverage report. You can run it from the <strong>Gradle Tasks</strong> perspective (on the right hand side of the screen in Android
-                Studio) double click on <strong>verification</strong> &gt; <strong><code>createMockDebugAndroidTestCoverageReport</code></strong>:</p>
-            <p>
-                <img style="max-width: 326.00px" src="img/89f9949df713766e.png">
-            </p>
-            <p>Or you can run it directly from the commandline:</p>
-            <pre><code>./gradlew createMockDebugAndroidTestCoverageReport</code></pre>
-            <p>Once the task is complete, you can find the coverage report in <code>app/build/reports/coverage/mock/debug</code>.</p>
-            <p>Open the file index.html in your web browser. (In Android Studio right click on the file index.html and select <strong>Open in Browser</strong> &gt; Chrome).</p>
-            <p>The report will look similar to this:</p>
-            <p>
-                <img style="max-width: 624.00px" src="img/10d6944244d0394b.png">
-            </p>
-            <p>You can explore the coverage of individual packages and files by navigating through the elements.</p>
-            <p>Go to the <code>NotePresenter</code> class (under <code>com.example.android.testing.notes.addnote</code> &gt; <code>AddNotePresenter</code>):</p>
-            <p>
-                <img style="max-width: 624.00px" src="img/7be003e32a6321b9.png">
-            </p>
-            <p>Click on a method to see a graphical representation of the parts of the code that are covered by our instrumentation tests:</p>
-            <p>
-                <img style="max-width: 513.50px" src="img/559da01c95c43b0f.png">
-            </p>
-
-
-        </google-codelab-step>
-
-        <google-codelab-step label="Congratulations!" duration="0">
-            <p>
-                <img style="max-width: 737.14px" src="img/260e2d084f0a1051.png">
-            </p>
-            <p><strong>Congratulations!</strong>
-            </p>
-            <p>You have now learned the basics of app architecture design using the MVP (Model-View-Presenter) pattern and explored the world of testing on Android!</p>
-            <p>In this codelab we have covered testing from a few different angles - from functional unit tests (with the help of Mockito to handle Android dependencies) to instrumental UI tests with Espresso. Developing an application from a test-driven
-                point of view like we did here can help you define a clean architecture and establish clear communication between different components of your application.</p>
-            <h3 class="checklist">What we&#39;ve covered</h3>
-            <ul class="checklist">
-                <li>Model-View-Presenter architecture</li>
-                <li>Unit Testing on Android: JUnit4</li>
-                <li>UI Testing on Android with Espresso</li>
-                <li>Mocking dependencies with Mockito</li>
-                <li>Advanced Espresso topics: Espresso-contrib and Espresso-intents</li>
-                <li>Code coverage reports</li>
+                <p>if you're using Ubuntu 16.04 or higher, <i>right click</i> in &lt;android-sdk&gt;/tools, select <i>Open in terminal</i>.</p>
+                <p>if you're using Windows 7 or higher, <i>shift+right click</i> in &lt;android-sdk&gt;/tools, select <i>Open Command Window Here</i>.</p>
+                <li>Run the tool with this command:</li>
+                <pre><code>
+$ uiautomatorviewer
+                    </code></pre>
             </ul>
-            <h3>Next Steps</h3>
-            <ul>
-                <li>Add some tests to your own app!</li>
-                <li>For your next application, consider following a similar test-driven approach for development and design.</li>
-            </ul>
-            <h3>Learn More</h3>
-            <ul>
-                <li><a href="http://google.github.io/android-testing-support-library/" target="_blank">Android Testing Support Library Documentation</a>
+            <p>To view the UI properties for your application:</p>
+            <ol>
+                <li>In the <code>uiautomatorviewer</code> interface, click the <strong>Device Screenshot</strong> button.
                 </li>
-                <li><a href="http://tools.android.com/tech-docs/unit-testing-support" target="_blank">Unit Testing Tools Support Documentation</a>
+                <li>Hover over the snapshot in the left-hand panel to see the UI components identified by the
+                    <code>uiautomatorviewertool</code>. The properties are listed in the lower right-hand panel and the layout hierarchy in the upper right-hand panel.</li>
+                <li>Optionally, click on the <strong>Toggle NAF Nodes</strong> button to see UI components that are non-accessible to UI Automator. Only limited information may be available for these components.
                 </li>
-                <li><a href="http://developer.android.com/tools/testing/testing-tools.html" target="_blank">Android Testing Documentation</a> </li>
-                <li><a href="http://developer.android.com/training/testing.html" target="_blank">Android Testing Training</a> - Training classes for Unit and Instrumentation Testing</li>
-                <li><a href="https://github.com/googlesamples/android-testing" target="_blank">Android Testing Samples</a> - A collection Android testing sample projects</li>
-                <li><a href="https://github.com/googlesamples/android-testing-templates" target="_blank">Android Testing Blueprint</a> - A collection of Google&#39;s Android testing tools and frameworks, all integrated in a single application project.</li>
-                <li><a href="https://google.github.io/android-testing-support-library/docs/espresso/cheatsheet/" target="_blank">Espresso Cheat Sheet</a> - A quick reference you can use during development. This cheat sheet contains most available <code>Matchers</code>,
-                    <code>ViewActions</code> and <code>ViewAssertions</code>.</li>
-                <li><a href="https://github.com/googlesamples/android-architecture" target="_blank">Android Architecture Blueprints</a> - A collection of samples to discuss and showcase different architectural tools and patterns for Android apps.</li>
-            </ul>
+            </ol>
+            <a href="img/uiautomatorviewer.png" data-lightbox="example"><img fsrc="img/uiautomatorviewer.png" data-lightbox="uiautomatorviewer" /></a>
+        </google-codelab-step>
+        <google-codelab-step label="Get the sample code" duration="10">
+            <p>Download all he sample code to your computer as a zip file from github by using this link</p>
             <p>
-                <a href="https://docs.google.com/a/google.com/forms/d/1jhSvKLZSpgguVyc03FdjSMuyLsBwe2upKggte8nAhSs/viewform?entry.340009906=Android-testing" target="_blank">
-                    <paper-button class="colored" raised>Tell us how we did</paper-button>
+                <a href="https://github.com/Innovatube/android-automation-test/archive/master.zip" target="_blank">
+                    <paper-button class="colored x-scope paper-button-0" raised="" role="button" tabindex="0" animated="" aria-disabled="false" elevation="1">
+                        <iron-icon icon="file-download" class="x-scope iron-icon-0"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" class="style-scope iron-icon" style="pointer-events: none; display: block; width: 100%; height: 100%;"><g class="style-scope iron-icon"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" class="style-scope iron-icon"></path></g></svg>
+                        </iron-icon>Download Sample
+                    </paper-button>
                 </a>
             </p>
 
+            <aside class="special">
+                The zip file contains a few folders and files:
+                <ul>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-3-espresso-setup</strong>—The starting code for setting section.</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-4-espresso-basic</strong>—The starting code for espresso basic section.</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-6-espresso-ondata</strong>—The starting code for adapterView.</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-7-recyclerview</strong>—The starting code for RecyclerView.</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-8-espresso-contrib</strong>—The starting code for action with navigation drawer, overflowmenu </li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-9-espresso-intent</strong>—The starting code for for stubbing and verify intent</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-10-espresso-web</strong>—The starting code for webview testing</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-11-espresso-idling</strong>—The starting code for idling resources</li>
+                    <li><img style="max-width: 20.00px" src="img/bb745dc85ae69f6b.png"><strong>step-12-codelab-final</strong>—The starting code for idling resources</li>
+                </ul>
+                <div id="background" class="style-scope paper-ripple"></div>
+                <div id="waves" class="style-scope paper-ripple"></div>
+            </aside>
+        </google-codelab-step>
+        <google-codelab-step label="Espresso setup instructions" duration="40">
+            <aside class="special">Open <i>step-3-espresso-setup</i> in Android Studio</aside>
+            <h3>Download Espresso</h3>
+            <ol>
+                <li>Make sure you have installed the latest Android Support Repository under Extras.</li>
+                <a href="img/support-libs.png" data-lightbox="example"><img fsrc="img/support-libs.png " data-lightbox="support-libs" /></a>
+                <li>Swith to Android view.</li>
+                <li>Open your app’s build.gradle file. This is usually not the top-level build.gradle file but app/build.gradle.</li>
+                <li>Add the following lines inside dependencies:</li>
+                <pre><code>androidTestCompile ('com.android.support.test:runner:0.5', {
+    exclude group: 'com.android.support', module: 'support-annotations'
+})
+androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    exclude group: 'com.android.support', module: 'support-annotations'
+})</code></pre>
+                <li>Set the instrumentation runner</li>
+                <pre><code>testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner "</code></pre>
+                <li>Click Sync Now</li>
+            </ol>
+            <a href="img/espresso-setup.jpg" data-lightbox="example"><img fsrc="img/espresso-setup.jpg" data-lightbox="espresso-setup" /></a>
+
+            <h3>Example build.gradle file</h3>
+            <pre><code>
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22 "
+
+    defaultConfig {
+        applicationId "com.my.awesome.app "
+        minSdkVersion 10
+        targetSdkVersion 22.0.1
+        versionCode 1
+        versionName "1.0 "
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner "
+    }
+}
+
+dependencies {
+    // App's dependencies, including test
+    compile 'com.android.support:support-annotations:22.2.0'
+
+    // Testing-only dependencies, exclude support-annotations to avoid conflict
+    androidTestCompile ('com.android.support.test:runner:0.5', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}</code></pre>
+            <h3>Add the first test</h3>
+            <a href="img/espresso-first-test.jpg" data-lightbox="example"><img fsrc="img/espresso-first-test.jpg " /></a>
+            <ol>
+                <li>Change too Android View</li>
+                <li>Create new test class under <i>src/androidTest/java/com.example.package/</i></li>
+                <li>Type a class name(for example: <i>HelloWorldEspressoTest</i>)</li>
+                <li>Click OK</li>
+            </ol>
+            <p>Example JUnit4 test using Rules
+                <pre><code>
+package com.example.espresso;
+
+import android.support.test.espresso.Espresso;
+import android.support.test.espresso.assertion.ViewAssertions;
+import android.support.test.espresso.matcher.ViewMatchers;
+import android.support.test.rule.ActivityTestRule;
+import android.support.test.runner.AndroidJUnit4;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
+@RunWith(AndroidJUnit4.class)
+public class HelloWorldEspressoTest {
+    @Rule
+    public ActivityTestRule mActivityTestRule = new ActivityTestRule(MainActivity.class);
+
+    @Test
+    public void listGoesOverTheFold() {
+        Espresso.onView(ViewMatchers.withText("Hello World!"))
+                .check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+    }
+
+}</code></pre> Press Alt+Enter to show intention actions and quick fixes
+                <h2>Running tests</h2>
+                <aside class="warning">
+                    <p>You need to <strong>turn off animations</strong> on your test device (or emulator), otherwise Espresso may not work as expected and your tests may fail. Turn off animations from <em>Settings</em> by opening <em>Developer Options</em>                        and turning all the following options under "<em>Drawing</em>" off:</p>
+                    <ul>
+                        <li>Window animation scale</li>
+                        <li>Transition animation scale</li>
+                        <li>Animator duration scale</li>
+                    </ul>
+                </aside>
+                <img fsrc="img/animation.png" />
+                <h3>In Android Studio</h3>
+                <img fsrc="img/espresso-runner-first.jpg " /> Right click on androidTest, select <i>'Run Test in com.example.packagename'</i> .If you can't excute test with this method, move to step 2.
+                <p>Create a test configuration</p>
+                <p>In Android Studio:</p>
+                <a class="example-image-link" href="img/espresso-runner.jpg" data-lightbox="example-1 "><img fsrc="img/espresso-runner.jpg " /></a>
+                <ol>
+                    <li>Open Run menu -> Edit Configurations</li>
+                    <li>Add a new Android Tests configuration</li>
+                    <li>Choose a module</li>
+                    <li>Add instrumentation runner</li>
+                    <pre><code>android.support.test.runner.AndroidJUnitRunner</code></pre>
+                    <li>Press OK</li>
+                    <li>Press Run with the selected configuration</li>
+                </ol>
 
         </google-codelab-step>
+        <google-codelab-step label="Espresso basics " duration="90">
+            <aside class="special">Open <i>step-4-espresso-basic</i> in Android Studio</aside>
+            <ul>
+                <li><a href="#finding-a-view-with-onview" id="markdown-toc-finding-a-view-with-onview">Finding a view with onView</a></li>
+                <li><a href="#performing-an-action-on-a-view" id="markdown-toc-performing-an-action-on-a-view">Performing an action on a view</a></li>
+                <li><a href="#checking-if-a-view-fulfills-an-assertion" id="markdown-toc-checking-if-a-view-fulfills-an-assertion">Checking if a view fulfills an assertion</a></li>
+                <li><a href="#get-started-with-a-simple-test-using-onview" id="markdown-toc-get-started-with-a-simple-test-using-onview">Get started with a simple test using onView</a></li>
+                <li><a href="#debugging" id="markdown-toc-debugging">Debugging</a></li>
+            </ul>
 
+            <p>The Espresso API encourages test authors to think in terms of what a user might do while interacting with the application - locating UI elements and interacting with them. At the same time, the framework prevents direct access to activities
+                and views of the application because holding on to these objects and operating on them off the UI thread is a major source of test flakiness. Thus, you will not see methods like getView and getCurrentActivity in the Espresso API. You can
+                still safely operate on views by implementing your own <code class="highlighter-rouge ">ViewAction</code>s and <code class="highlighter-rouge ">ViewAssertion</code>s.</p>
+
+            <p>Here’s an overview of the main components of Espresso:</p>
+
+            <ul>
+                <li><strong>Espresso</strong> – Entry point to interactions with views (via <code class="highlighter-rouge ">onView</code> and <code class="highlighter-rouge ">onData</code>). Also exposes APIs that are not necessarily tied to any view (e.g.
+                    <code class="highlighter-rouge ">pressBack</code>).</li>
+                <li><strong>ViewMatchers</strong> – A collection of objects that implement <code class="highlighter-rouge ">Matcher&lt;? super View&gt;</code> interface. You can pass one or more of these to the <code class="highlighter-rouge ">onView</code>                    method to locate a view within the current view hierarchy.</li>
+                <li><strong>ViewActions</strong> – A collection of <code class="highlighter-rouge ">ViewAction</code>s that can be passed to the <code class="highlighter-rouge ">ViewInteraction.perform()</code> method (for example, <code class="highlighter-rouge ">click()</code>).</li>
+                <li><strong>ViewAssertions</strong> – A collection of <code class="highlighter-rouge ">ViewAssertion</code>s that can be passed the <code class="highlighter-rouge ">ViewInteraction.check()</code> method. Most of the time, you will use the
+                    matches assertion, which uses a View matcher to assert the state of the currently selected view.</li>
+            </ul>
+
+            <p>Example:</p>
+
+            <pre><code></code>Espresso.onView(ViewMatchers.withId(R.id.my_view))      // withId(R.id.my_view) is a ViewMatcher
+  .perform(ViewActions.click())               // click() is a ViewAction
+  .check(ViewAssertions.matches(ViewMatchers.isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
+</pre>
+
+            <h2 id="finding-a-view-with-onview">Finding a view with onView</h2>
+
+            <p>In the vast majority of cases, the onView method takes a hamcrest matcher that is expected to match one — and only one — view within the current view hierarchy. Matchers are powerful and will be familiar to those who have used them with Mockito
+                or Junit. If you are not familiar with hamcrest matchers, we suggest you start with a quick look at <a href="http://www.slideshare.net/shaiyallin/hamcrest-matchers ">this presentation</a>.</p>
+
+            <p>Often the desired view has a unique <code class="highlighter-rouge ">R.id</code> and a simple <code class="highlighter-rouge ">withId</code> matcher will narrow down the view search. However, there are many legitimate cases when you cannot
+                determine <code class="highlighter-rouge ">R.id</code> at test development time. For example, the specific view may not have an R.id or the R.id is not unique. This can make normal instrumentation tests brittle and complicated to write
+                because the normal way to access the view (with <code class="highlighter-rouge ">findViewById()</code>) does not work. Thus, you may need to access private members of the Activity or Fragment holding the view or find a container with a
+                known R.id and navigate to its content for the particular view.</p>
+
+            <p>Espresso handles this problem cleanly by allowing you to narrow down the view using either existing <code class="highlighter-rouge ">ViewMatcher</code>s or your own custom ones.</p>
+
+            <p>Finding a view by its R.id is as simple as:</p>
+
+            <pre><code>Espresso.onView(ViewMatchers.withId(R.id.my_view))</code></pre>
+            <p><strong>It's time for you to practice</strong></p>
+            <img fsrc="img/findview-practice-screen.png " />
+            <p>Open Espresso Project then open HelloWorldEspressoTest.java</p>
+            <a class="example-image-link" href="img/findview-practice.jpg" data-lightbox="example-1"><img fsrc="img/findview-practice.jpg " /></a>
+            <p>Navigate to method <i>testFindItemById</i></p>
+            <p>Use UIAutomatorViewer to find <b>id</b> of <i>Say Greeting</i> button, and <i>Your name</i> edit text</p>
+            <p>Sometimes, R.id values are shared between multiple views. When this happens an attempt to use a particular <code class="highlighter-rouge ">R.id</code> gives you an <code class="highlighter-rouge
+                    ">AmbiguousViewMatcherException</code> (for example). The exception message provides you with a text representation of the current view hierarchy, which you can search for and find the views that match the non-unique <code class="highlighter-rouge ">R.id</code>:</p>
+            <p> add the following row to testFindItemById</p>
+            <pre><code>Espresso.onView(ViewMatchers.withId(R.id.text_greeting)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));</code></pre>
+            <p> then press run, the following error will be shown:</p>
+            <figure class="highlight "><pre><code class="language-java " data-lang="java "><span class="n ">java</span><span class="o ">.</span><span class="na ">lang</span><span class="o ">.</span><span class="na
+                    ">RuntimeException</span><span class="o ">:</span>
+<span class="n ">com</span><span class="o ">.</span><span class="na ">google</span><span class="o ">.</span><span class="na ">android</span><span class="o ">.</span><span class="na ">apps</span><span class="o ">.</span><span class="na
+                    ">common</span><span class="o ">.</span><span class="na ">testing</span><span class="o ">.</span><span class="na ">ui</span><span class="o ">.</span><span class="na ">espresso</span><span class="o ">.</span><span class="na
+                    ">AmbiguousViewMatcherException</span><span class="o ">:</span>
+<span class="n ">This</span> <span class="n ">matcher</span> <span class="n ">matches</span> <span class="n ">multiple</span> <span class="n ">views</span> <span class="n ">in</span> <span class="n ">the</span> <span class="nl
+                    ">hierarchy:</span> <span class="o ">(</span><span class="nl ">withId:</span> <span class="n ">is</span> <span class="o ">&lt;</span><span class="mi ">R.id.text_greeting</span><span class="o ">&gt;)</span></code></pre></figure>
+
+            <p>…</p>
+
+            <figure class="highlight "><pre><code class="language-bash " data-lang="bash ">+------>AppCompatTextView{id=2131492953, res-name=text_greeting, visibility=VISIBLE, width=152, height=38, has-focus=false, has-focusable=false, has-window-focus=true, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, root-is-layout-requested=false, has-input-connection=false, x=32.0, y=219.0, text=Hello World!, input-type=0, ime-target=false, has-links=false} ****MATCHES****
+|
++------>AppCompatTextView{id=2131492953, res-name=text_greeting, visibility=VISIBLE, width=704, height=38, has-focus=false, has-focusable=false, has-window-focus=true, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, root-is-layout-requested=false, has-input-connection=false, x=32.0, y=257.0, text=Hello World 2!, input-type=0, ime-target=false, has-links=false} ****MATCHES****
+</code></pre></figure>
+
+            <p>Looking through the various attributes of the views, you may find uniquely identifiable properties (in the example above, one of the views has the text “Hello World 2!”). You can use this to narrow down your search by using combination matchers:
+            </p>
+
+            <pre><code>Espresso.onView(Matchers.allOf(ViewMatchers.withId(R.id.text_greeting), ViewMatchers.withText("Hello World 2!")))</code></pre>
+
+            <p>You can also use <code class="highlighter-rouge ">not</code> to reverse any of the matchers:</p>
+
+            <pre><code>Espresso.onView(Matchers.allOf(ViewMatchers.withId(R.id.text_greeting), Matchers.not(ViewMatchers.withText("Unwanted "))))</code></pre>
+            <p>See <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/core/src/main/java/android/support/test/espresso/matcher/ViewMatchers.java ">ViewMatchers</a> for the view matchers provided by Espresso.</p>
+            <p><strong>Now it's time for you to practice: use <i>Matchers.allOf(ViewMatchers.withId(...),Matchers.not(ViewMatchers.withText(...)))</i> to find <b>'Hello World 2!'</b></strong></p>
+            <p><em>Note:</em> In a well-behaved application, all views that a user can interact with should either contain descriptive text or have a content description (see <a href="http://developer.android.com/guide/topics/ui/accessibility/apps.html ">Android accessibility guidelines</a>.
+                If you are not able to narrow down an onView search using ‘withText’ or ‘withContentDescription’, consider treating it as an accessibility bug.</p>
+
+            <p><em>Note:</em> Use the least descriptive matcher that finds the one view you’re looking for. Do not over-specify as this will force the framework to do more work than is necessary. For example, if a view is uniquely identifiable by its text,
+                you need not specify that the view is also assignable from <code class="highlighter-rouge ">TextView</code>. For a lot of views the <code class="highlighter-rouge ">R.id</code> of the view should be sufficient.</p>
+
+            <p><em>Note:</em> If the target view is inside an <code class="highlighter-rouge ">AdapterView</code> (such as <code class="highlighter-rouge ">ListView</code>, <code class="highlighter-rouge ">GridView</code>, <code class="highlighter-rouge ">Spinner</code>)
+                the <code class="highlighter-rouge ">onView</code> method might not work and it is recommended to use the <code class="highlighter-rouge ">onData</code> method instead.</p>
+
+            <h2 id="performing-an-action-on-a-view">Performing an action on a view</h2>
+            <p>When you have found a suitable matcher for the target view, it is possible to perform <code class="highlighter-rouge ">ViewAction</code>s on it using the <code class="highlighter-rouge ">perform</code> method.</p>
+
+            <p>For example, to click on the view:</p>
+
+            <pre><code>Espresso.onView(...).perform(ViewActions.click());</code></pre>
+            <img fsrc="img/perform-action.png " />
+            <p><strong>It's your time to practice: Open <i>PerformActionActivityTest.java</i></strong></p>
+            <p>Use UIAutomatorViewer to get PerformActionActivity's view hierarchy then perform <i>click()</i> on <i>Buy</i> button</p>
+
+            <p>You can execute more than one action with one perform call:</p>
+
+            <pre><code>Espresso.onView(...).perform(ViewActions.typeText("Hello "), ViewActions.pressBack());</code></pre>
+            <p><strong>Similar to <i>Buy</i> button, type your favorite pet to <i>Animal</i> field then <i>pressBack</i></strong></p>
+
+            <p>If the view you are working with is located inside a <code class="highlighter-rouge ">ScrollView</code> (vertical or horizontal), consider preceding actions that require the view to be displayed (like <code class="highlighter-rouge
+                    ">click()</code> and <code class="highlighter-rouge ">typeText()</code>) with <code class="highlighter-rouge ">scrollTo()</code>. This ensures that the view is displayed before proceeding to the other action:</p>
+
+            <pre><code>Espresso.onView(...).perform(ViewActions.scrollTo(), ViewActions.click());</code></pre>
+            <p><strong> Practice: Scroll to <i>Ant</i> then perform <i>click()</i></strong></p>
+            <p><em>Note:</em> <code class="highlighter-rouge ">scrollTo()</code> will have no effect if the view is already displayed so you can safely use it in cases when the view is displayed due to larger screen size (for example, when your tests run
+                on both smaller and larger screen resolutions).</p>
+
+            <p>See <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/core/src/main/java/android/support/test/espresso/action/ViewActions.java ">ViewActions</a> for the view actions provided by Espresso.</p>
+
+            <h2 id="checking-if-a-view-fulfills-an-assertion">Checking if a view fulfills an assertion</h2>
+
+            <p>Assertions can be applied to the currently selected view with the <code class="highlighter-rouge ">check()</code> method. The most used assertion is the <code class="highlighter-rouge
+                    ">matches()</code> assertion, it uses a <code class="highlighter-rouge ">ViewMatcher</code> to assert the state of the currently selected view.</p>
+
+            <p>For example, to check that a view has the text “Hello!”:</p>
+
+            <pre><code>Espresso.onView(...).check(ViewAssertions.matches(ViewMatchers.withText("Hello!")));</code></pre>
+            <p><em>Note:</em> Do not put “assertions” into the onView argument - instead, clearly specify what you are checking inside the check block. For example:</p>
+            <p> To check that a view is above the other view</p>
+            <pre><code></code></pre>
+            <p>If you want to assert that “Hello!” is content of the view, the following is considered bad practice:</p>
+
+            <pre><code>// Don't use assertions like withText inside onView.
+Espresso.onView(Matchers.allOf(ViewMatchers.withId(...), ViewMatchers.withText("Hello!
+                    "))).check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+</code></pre>
+
+            <p>On the other hand, if you want to assert that a view with the text “Hello!” is visible - for example after a change of the views visibility flag - the code is fine.</p>
+
+            <p><strong>Note:</strong> Be sure to pay attention to the difference between <em>asserting that a view is not displayed</em> and <em>asserting that a view is not present</em> in the view hierarchy.</p>
+            <p><strong>Practice: open CheckViewActivityTest.java, then verify button's text is 'Hello Button' and textivew's text is 'Hello TextView'</strong></p>
+            <h2 id="get-started-with-a-simple-test-using-onview">Get started with a simple test using onView</h2>
+
+            <p>In this example <code class="highlighter-rouge">MainActivity</code> contains a <code class="highlighter-rouge ">Button</code>, <code class="highlighter-rouge ">EditText</code> and a <code class="highlighter-rouge
+                    ">TextView</code>. When the button is clicked the content of the <code class="highlighter-rouge ">TextView</code> changes to <code class="highlighter-rouge ">"Hello " plus content of  <code class="highlighter-rouge ">EditText</code></code>.If
+                <code class="highlighter-rouge ">EditText</code> is empty, content of <code class="highlighter-rouge ">Button</code> is <code class="highlighter-rouge ">Hello there</code>. Here’s how to test this with Espresso:</p>
+
+            <h3 id="click-on-the-button ">1. Click on the button</h3>
+
+            <p>The first step is to look for a property that helps to find the button. The button in the <code class="highlighter-rouge ">MainActivity</code> has a unique R.id - perfect!</p>
+
+            <pre><code>Espresso.onView(ViewMatchers.withId(R.id.button_greeting));</code></pre>
+
+            <p>Now to perform the click:</p>
+
+            <pre><code>Espresso.onView(ViewMatchers.withId(R.id.button_greeting)).perform(ViewActions.click());</code></pre>
+
+            <h3 id="check-that-the-textview-now-contains-hello-espresso ">2. Check that the <code class="highlighter-rouge ">TextView</code> now contains “Hello there”</h3>
+
+            <p>The <code class="highlighter-rouge ">TextView</code> with the text to verify has a unique R.id too:</p>
+
+            <pre><code>Espresso.onView(ViewMatchers.withId(R.id.text_greeting_unique))</code></pre>
+
+            <p>Now to verify the content text:</p>
+
+            <pre><code class="language-java " data-lang="java ">Espresso.onView(ViewMatchers.withId(R.id.text_greeting_unique)).check(ViewAssertions.matches(ViewMatchers.withText("Hello there")));</code></pre>
+            <h3 id="your-practice ">3. Type your name in <code class="highlighter-rouge ">EditText</code>, click the <code class="highlighter-rouge ">Button</code>, then verify <code class="highlighter-rouge ">TextView</code>'s content </h3>
+            <pre><code>It's your turn</code></pre>
+            <h2 id="debugging">Debugging</h2>
+
+            <p>Espresso provides useful debugging information when a test fails:</p>
+
+            <h3 id="logging ">Logging</h3>
+
+            <p>Espresso logs all view actions to logcat. For example:</p>
+
+            <figure class="highlight "><pre><code class="language-bash " data-lang="bash ">ViewInteraction: Performing <span class="s1 ">'single click '</span> action on view with text: Espresso</code></pre></figure>
+
+            <h3 id="view-hierarchy ">View hierarchy</h3>
+
+            <p>Espresso prints the view hierarchy in the exception string when <code class="highlighter-rouge ">onView()</code> fails. * If <code class="highlighter-rouge ">onView()</code> does not find the target view, a <code class="highlighter-rouge
+                ">NoMatchingViewException</code> is thrown. You can examine the view hierarchy in the exception string to analyze why the matcher did not match any views. * If <code class="highlighter-rouge ">onView()</code> finds multiple views that
+                match the given matcher, an
+                <code class="highlighter-rouge ">AmbiguousViewMatcherException</code> is thrown. The view hierarchy is printed and all views that were matched are marked with the MATCHES label:</p>
+
+            <figure class="highlight "><pre><code class="language-bash " data-lang="bash ">java.lang.RuntimeException:
+com.google.android.apps.common.testing.ui.espresso.AmbiguousViewMatcherException:
+This matcher matches multiple views <span class="k ">in </span>the hierarchy: <span class="o ">(</span>withId: is &lt;123456789&gt;<span class="o ">)</span></code></pre></figure>
+
+            <p>…</p>
+
+            <figure class="highlight "><pre><code class="language-bash " data-lang="bash ">+-----&gt;SomeView<span class="o ">{</span><span class="nv ">id</span><span class="o ">=</span>123456789, res-name<span class="o
+                ">=</span>plus_one_standard_ann_button, <span class="nv ">visibility</span><span class="o ">=</span>VISIBLE, <span class="nv ">width</span><span class="o ">=</span>523, <span class="nv ">height</span><span class="o ">=</span>48, has-focus<span class="o ">=</span><span class="nb
+                ">false</span>, has-focusable<span class="o ">=</span><span class="nb ">true</span>, window-focus<span class="o ">=</span><span class="nb ">true</span>,
+is-focused<span class="o ">=</span><span class="nb ">false</span>, is-focusable<span class="o ">=</span><span class="nb ">false</span>, <span class="nv ">enabled</span><span class="o ">=</span><span class="nb ">true</span>, <span class="nv
+                ">selected</span><span class="o ">=</span><span class="nb ">false</span>, is-layout-requested<span class="o ">=</span><span class="nb ">false</span>, <span class="nv ">text</span><span class="o ">=</span>, root-is-layout-requested<span class="o ">=</span><span class="nb
+                ">false</span>, <span class="nv ">x</span><span class="o ">=</span>0.0, <span class="nv ">y</span><span class="o ">=</span>625.0, child-count<span class="o ">=</span>1<span class="o ">}</span>
+<span class="k ">****</span>MATCHES<span class="k ">****</span>
+|
++------&gt;OtherView<span class="o ">{</span><span class="nv ">id</span><span class="o ">=</span>123456789, res-name<span class="o ">=</span>plus_one_standard_ann_button, <span class="nv ">visibility</span><span class="o
+                ">=</span>VISIBLE, <span class="nv ">width</span><span class="o ">=</span>523, <span class="nv ">height</span><span class="o ">=</span>48, has-focus<span class="o ">=</span><span class="nb ">false</span>, has-focusable<span class="o ">=</span><span class="nb
+                ">true</span>, window-focus<span class="o ">=</span><span class="nb ">true</span>,
+is-focused<span class="o ">=</span><span class="nb ">false</span>, is-focusable<span class="o ">=</span><span class="nb ">true</span>, <span class="nv ">enabled</span><span class="o ">=</span><span class="nb ">true</span>, <span class="nv
+                ">selected</span><span class="o ">=</span><span class="nb ">false</span>, is-layout-requested<span class="o ">=</span><span class="nb ">false</span>, <span class="nv ">text</span><span class="o ">=</span>Hello!, root-is-layout-requested<span class="o
+                ">=</span><span class="nb ">false</span>, <span class="nv ">x</span><span class="o ">=</span>0.0, <span class="nv ">y</span><span class="o ">=</span>0.0, child-count<span class="o ">=</span>1<span class="o ">}</span>
+<span class="k ">****</span>MATCHES<span class="k ">****</span></code></pre></figure>
+
+            <p>When dealing with a complicated view hierarchy or unexpected behavior of widgets it is always helpful to use the <a href="http://developer.android.com/tools/help/hierarchy-viewer.html ">Android View Hierarchy Viewer</a> for an explanation.</p>
+
+            <h3 id="adapterview-warnings "><code class="highlighter-rouge ">AdapterView</code> warnings</h3>
+
+            <p>Espresso warns users about presence of <code class="highlighter-rouge ">AdapterView</code> widgets. When an <code class="highlighter-rouge ">onView()</code> operation throws a <code class="highlighter-rouge
+                ">NoMatchingViewException</code> and <code class="highlighter-rouge ">AdapterView</code> widgets are present in the view hierarchy, the most common solution is to use <code class="highlighter-rouge ">onData()</code>. The exception message
+                will include a warning with a list of the adapter views. You may use this information to invoke onData to load the target view.</p>
+        </google-codelab-step>
+        <google-codelab-step label=" Espresso cheat sheet " duration="20">
+            <p> You can download pdf version from <a href="https://google.github.io/android-testing-support-library/downloads/espresso-cheat-sheet-2.1.0.pdf ">here</a></p>
+            <img fsrc="img/espresso-cheatsheet.png" />
+            <img fsrc="img/viewmatcher.png" />
+            <img fsrc="img/dataoptions.png" />
+            <img fsrc="img/intentmatcher.jpg " />
+        </google-codelab-step>
+        <google-codelab-step label="Espresso onData with AdapterView" duration="40">
+            <aside class="special">Open step-6-espresso-ondata in Android Studio</aside>
+            <h2 id="using-ondata-with-adapterview-controls-listview-gridview- ">Using onData with <code class="highlighter-rouge ">AdapterView</code> controls (<code class="highlighter-rouge ">ListView</code>, <code class="highlighter-rouge ">GridView</code>, …)</h2>
+
+            <p><a href="http://developer.android.com/reference/android/widget/AdapterView.html ">AdapterView</a> is a special type of widget that loads its data dynamically from an Adapter. The most common example of an <code class="highlighter-rouge
+                    ">AdapterView</code> is <code class="highlighter-rouge ">ListView</code>. As opposed to static widgets like <code class="highlighter-rouge ">LinearLayout</code>, only a subset of the <code class="highlighter-rouge
+                    ">AdapterView</code> children may be loaded into the current view hierarchy and a simple <code class="highlighter-rouge ">onView()</code> search would not find views that are not currently loaded. Espresso handles this by providing
+                a separate <code class="highlighter-rouge ">onData()</code> entry point which is able to first load the adapter item in question (bringing it into focus) prior to operating on it or any of its children.</p>
+
+            <p><strong>Note:</strong> You may choose to bypass the <code class="highlighter-rouge ">onData()</code> loading action for items in adapter views that are initially displayed on screen because they are already loaded. However, it is safer to
+                always use <code class="highlighter-rouge ">onData()</code>.</p>
+
+            <p><strong>Warning:</strong> Custom implementations of <code class="highlighter-rouge ">AdapterView</code> can have problems with the <code class="highlighter-rouge ">onData()</code> method, if they break inheritance contracts (particularly the
+                <code class="highlighter-rouge ">getItem()</code> API). In such cases, the best course of action is to refactor your application code. If you cannot do so, you can implement a matching custom <code class="highlighter-rouge ">AdapterViewProtocol</code>.
+                Take a look at the default <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/core/src/main/java/android/support/test/espresso/action/AdapterViewProtocol.java ">AdapterViewProtocols</a>                provided by Espresso for more information.</p>
+
+            <h2 id="get-started-with-a-simple-test-using-ondata">Get started with a simple test using onData</h2>
+
+            <p>This simple test demonstrates how to use <code class="highlighter-rouge ">onData()</code>. <code class="highlighter-rouge ">SimpleActivity</code> contains a <code class="highlighter-rouge ">Spinner</code> with a few items - Strings that represent
+                types of coffee beverages. When an item is selected, there is a <code class="highlighter-rouge ">TextView</code> that changes to <code class="highlighter-rouge ">"One %s a day! "</code> where %s is the selected item. The goal of this test
+                is to open the <code class="highlighter-rouge ">Spinner</code>, select a specific item and then verify that the <code class="highlighter-rouge ">TextView</code> contains the item. As the <code class="highlighter-rouge
+                    ">Spinner</code> class is based on <code class="highlighter-rouge ">AdapterView</code> it is recommended to use <code class="highlighter-rouge ">onData()</code> instead of <code class="highlighter-rouge ">onView()</code> for matching
+                the item.</p>
+            <p><strong>Open <code class="highlighter-rouge ">SpinnerActivityTest.java</code>, navigate to <code class="highlighter-rouge ">testOnSpinnerItemClickShouldShowHelloMessage</code> then comment this line <code class="highlighter-rouge
+                    ">fail("Haven 't implemented yet");</code></strong></p>
+            <h3 id="click-on-the-spinner-to-open-the-item-selection ">1. Click on the Spinner to open the item selection</h3>
+
+            <figure class="highlight "><pre><code class="language-java " data-lang="java ">Espresso.onView(ViewMatchers.withId(R.id.spinner_simple)).perform(ViewActions.click());</code></pre></figure>
+
+            <h3 id="click-on-the-item-americano ">2. Click on the item “Americano”</h3>
+
+            <p>For the item selection the Spinner creates a <code class="highlighter-rouge ">ListView</code> with its contents - this can be very long and the element not contributed to the view hierarchy - by using <code class="highlighter-rouge
+                ">onData()</code> we force our desired element into the view hierarchy. The items in the <code class="highlighter-rouge ">Spinner</code> are Strings, we want to match an item that is a String and is equal to the String “Americano”, then
+                we click on it:</p>
+
+            <figure class="highlight "><pre><code class="language-java " data-lang="java ">Espresso.onData(Matchers.allOf(Matchers.is(Matchers.instanceOf(String.class)),
+                Matchers.is("Americano")))
+                .perform(ViewActions.click());</code></pre></figure>
+
+            <h3 id="verify-that-the-textview-contains-the-string-americano ">3. Verify that the <code class="highlighter-rouge ">TextView</code> contains the String “Americano”</h3>
+
+            <pre><code>Espresso.onView(ViewMatchers.withId(android.R.id.text1))
+                .check(ViewAssertions.matches(ViewMatchers.withText(Matchers.containsString("Americano"))));</code></pre>
+            <h3 id="matching-data-using-ondata-and-a-custom-viewmatcher">Matching data using onData() and a custom ViewMatcher</h3>
+            <p>The activity below contains a ListView, which is backed by a <a href="http://developer.android.com/reference/android/widget/ArrayAdapter.html">ArrayAdapter</a> that holds data for each row in a <code class="highlighter-rouge">List&lt;Object&gt;</code>.</p>
+            <img fsrc="img/listview-screen.png" />
+            <p>Each item contains two attributes: name and flag. For example:</p>
+            <pre><code>{name: "Afghanistan", flag: "https://www.countries-ofthe-world.com/flags-normal/flag-of-Afghanistan.png"}</code></pre>
+            <p>The code for a click on the row with "name:Vietnam" looks like this</p>
+            <pre><code>onData(withName("Vietnam")).perform(click());</code></pre>
+            <p><code class="highlighter-rouge">withName</code> is the custom matcher</p>
+            <pre><code>private Matcher&lt;Object&gt; withName(final String name){
+        return new BoundedMatcher&lt;Object, Country&gt;(Country.class) {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("with name :"+name);
+            }
+
+            @Override
+            protected boolean matchesSafely(Country item) {
+                return item.name.equals(name);
+            }
+        };
+    }</code></pre>
+            <p>We use a <code class="highlighter-rouge">BoundedMatcher</code> as a base because we want to be able to only match objects of the class <code class="highlighter-rouge">List</code>. We override the <code class="highlighter-rouge">matchesSafely()</code>                method, then check if item has the same name as the argument. <code class="highlighter-rouge">ListViewActivityTestSolution.java</code> contains a different implementation of custom matcher which is more flexible.</code>
+            </p>
+            <p><strong>Now it's your turn: open <code class="highlighter-rouge">ListViewActivityTest.java</code>
+                </strong>
+            </p>
+            <p>Click on item with text is Mexico, verify that content of textview with id text_selected is 'Mexico' </p>
+            <h3 id="matching-a-specific-child-view-of-a-view">Matching a specific child view of a view</h3>
+            <p>The sample above issues a click in the middle of the entire row of a ListView. But what if we want to operate on a specific child of the row? For example, we would like to click on the imageview of the row of the <code class="highlighter-rouge">ListViewActivity</code>,
+                which displays the <code class="highlighter-rouge">country.flag</code>:</p>
+            <p>Just add an <code class="highlighter-rouge">onChildView()</code> specification to your <code class="highlighter-rouge">DataInteraction</code>:</p>
+            <pre><code>onData(withName(startsWith("England")))
+                .onChildView(isAssignableFrom(ImageView.class))
+                .perform(click());</code></pre>
+            <p><strong>It's your turn: open <code class="highlighter-rouge">ListViewActivityTest.java</code></strong>, click on Angola's flag</p>
+        </google-codelab-step>
+        <google-codelab-step label="Espresso RecyclerView" duration="40">
+            <aside class="special">Open step-7-recyclerview in Android Studio</aside>
+            <h2 id="recyclerviews">RecyclerViews</h2>
+            <p>RecyclerViews work differently than AdapterViews so <code class="highlighter-rouge">onData()</code> cannot be used to interact with them.</p>
+            <p>In order to interact with RecyclerViews using Espresso, the <code class="highlighter-rouge">espresso-contrib</code> package has a collection of <a href="https://developer.android.com/reference/android/support/test/espresso/contrib/RecyclerViewActions.html">RecyclerViewActions</a>                that can be used to scroll to positions or to perform actions on items:</p>
+            <pre><code>onView(withId(R.id.recycler_view)).perform(RecyclerViewActions.ACTION)</code></pre>
+            <ul>
+                <li><code class="highlighter-rouge">scrollTo</code> - Scrolls to the matched View.</li>
+                <li><code class="highlighter-rouge">scrollToHolder</code> - Scrolls to the matched View Holder.</li>
+                <li><code class="highlighter-rouge">scrollToPosition</code> - Scrolls to a specific position.</li>
+                <li><code class="highlighter-rouge">actionOnHolderItem</code> - Performs a View Action on a matched View Holder.</li>
+                <li><code class="highlighter-rouge">actionOnItem</code> - Performs a View Action on a matched View.</li>
+                <li><code class="highlighter-rouge">actionOnItemAtPosition</code> - Performs a ViewAction on a view at a specific position.</li>
+            </ul>
+            <p>Add the following line to build.gradle</p>
+            <pre><code>androidTestCompile("com.android.support.test.espresso:espresso-contrib:2.2.2") {
+    exclude group: 'com.android.support'
+}</code></pre>
+            <p>Some examples:</p>
+            <pre><code>@Test
+public void testScrollToHolder() throws Exception {
+    //scroll to holder has text 'JYN ERSO' then click
+    //use perform(RecyclerViewActions.scrollToHolder
+    onView(withId(R.id.recycler_character))
+            .perform(RecyclerViewActions.scrollToHolder(hasName("JYN ERSO")), click());
+    onView(withId(R.id.text_role)).check(matches(isDisplayed()));
+}
+
+@Test
+public void testActionOnItemAtPosition() throws Exception {
+    //perform long click on 10th item
+    //use RecyclerViewActions.actionOnItemAtPosition
+    onView(withId(R.id.recycler_character))
+            .perform(RecyclerViewActions.actionOnItemAtPosition(0, longClick()));
+    onView(withId(R.id.text_role)).check(matches(isDisplayed()));
+    
+//this is a custom matcher
+private Matcher<RecyclerView.ViewHolder> hasName(final String name) {
+    return new BoundedMatcher<RecyclerView.ViewHolder, CharacterViewHolder>(CharacterViewHolder.class) {
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("has name :" + name);
+        }
+
+        @Override
+        protected boolean matchesSafely(CharacterViewHolder item) {
+            return item.mNameTextView.getText().toString().equals(name);
+        }
+    };
+}    
+}</code></pre>
+            <p><strong>Practice's time: open <code class="highlighter-rouge">RecyclerViewActivityTest</code> and implement the following test</strong></p>
+            <ul>
+                <li>testScrollToPosition</li>
+                <li>testActionOnHolderItem</li>
+                <li>testActionOnItem</li>
+            </ul>
+        </google-codelab-step>
+        <google-codelab-step label="Espresso Contrib" duration="20">
+            <aside class="special">Open step-8-espresso-contrib in Android Studio</aside>
+            <p>Espresso-contrib is a external contributions that contain DatePicker, RecyclerView, Drawer actions, Accessibility check and CountingIdlingResouces</p>
+            <p>You've already known about RecyclerViewActions, let's get started with DatePicker</p>
+            <img fsrc="img/main-activity.png" />
+            <p>When you click on <i>Your birthday</i>, the following dialog will appear</p>
+            <img fsrc="img/datepicker.png" />
+            <p>Navigate to <code>MainActivityTest.java</code></p>
+            <pre><code>@Test
+public void testSetBod() throws Exception {
+    //find view with id is R.id.edit_bod, then click
+    onView(withId(R.id.edit_bod)).perform(click());
+    //find DatePicker view, then set date to 1/10/1993
+    onView(isAssignableFrom(DatePicker.class)).perform(PickerActions.setDate(1993, 10, 1));
+    //Press OK
+    onView(withId(android.R.id.button1)).perform(click());
+    //verify result
+    onView(withId(R.id.edit_bod)).check(matches(withText("1/10/1993")));
+}</code></pre>
+            <p><strong>Time for Navigation Drawer</strong></p>
+            <p>The navigation drawer is a panel that displays the app’s main navigation options on the left edge of the screen. It is hidden most of the time, but is revealed when the user swipes a finger from the left edge of the screen or, while at the
+                top level of the app, the user touches the app icon in the action bar.</p>
+            <img fsrc="img/navigation-drawer.png" />
+            <ol>
+                <li>NavigationView</li>
+                <li>NavigationHeader</li>
+                <li>NavigationMenu</li>
+                <li>DrawerLayout</li>
+            </ol>
+            <p>Now we want to verify the state of navigation drawer, and open ListViewActivity by clicking on ListView item</p>
+            <pre><code>// Drawer should be close on start.
+onView(withId(R.id.drawer_layout))
+        .check(matches(isClosed()));
+onView(withContentDescription(R.string.navigation_drawer_open))
+        .perform(click());
+//It should now be open
+onView(withId(R.id.drawer_layout))
+        .check(matches(isOpen()));
+//navigate to ListView item
+onView(withId(R.id.nav_view)).perform(navigateTo(R.id.nav_list));
+//Toolbar's title should be ListView
+onView(allOf(isAssignableFrom(TextView.class), isDescendantOfA(isAssignableFrom(Toolbar.class))))
+        .check(matches(withText("ListView")));</code></pre>
+            <p><strong>Now it's your turn, Could you open OverflowMenu, then navigate to ListViewActivity?</strong></p>
+            <p><code>openActionBarOverflowOrOptionsMenu</code> is your life saver.</p>
+
+            <h2>Accessibility Checking</h2>
+            <p>The <a href="http://developer.android.com/reference/android/support/test/espresso/contrib/AccessibilityChecks.html">AccessibilityChecks</a> class allows you to use your existing test code to test for accessibility issues. As a <code class="highlighter-rouge">View</code>                is acted upon in tests, checks from the <a href="https://code.google.com/p/eyes-free/source/browse/trunk/devtools/accessibility-test-framework/src/main/java/com/google/android/apps/common/testing/accessibility/framework">accessibility test framework</a>                will be run automatically before proceeding. Simply import the class and add the following line of code to your setup methods annotated with <code class="highlighter-rouge">@Before</code>:</p>
+
+            <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">android.support.test.espresso.contrib.AccessibilityChecks</span><span class="o">;</span>
+
+<span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@LargeTest</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AccessibilityChecksIntegrationTest</span> <span class="o">{</span>
+    <span class="nd">@BeforeClass</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">enableAccessibilityChecks</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">AccessibilityChecks</span><span class="o">.</span><span class="na">enable</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+            <p>This will cause accessibility checks to run on a given view every time a <code class="highlighter-rouge">ViewAction</code> from the ViewActions class is used. To instead run these checks on all views in the hierarchy, use:</p>
+
+            <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">AccessibilityChecks</span><span class="o">.</span><span class="na">enable</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">setRunChecksFromRootView</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span></code></pre></figure>
+
+            <p>When first turning on checks, you may encounter a number of issues you may not be willing or able to deal with immediately. You can suppress these errors by setting a matcher for the results that you would like to suppress. Matchers for
+                <a href="https://code.google.com/p/eyes-free/source/browse/trunk/devtools/accessibility-test-framework/src/main/java/com/google/android/apps/common/testing/accessibility/framework/AccessibilityCheckResultUtils.java">AccessibilityCheckResults</a>                are provided in <code class="highlighter-rouge">AccessibilityCheckResultUtils</code> in the accessibility test framework. For example, to suppress all errors for a view with id <code class="highlighter-rouge">R.id.example_view</code>:</p>
+
+            <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">AccessibilityChecks</span><span class="o">.</span><span class="na">enable</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">setSuppressingResultMatcher</span><span class="o">(</span><span class="n">matchingViews</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">example_view</span><span class="o">)));</span></code></pre></figure>
+
+            <p>For more advanced configuration of accessibility checking, see the <a href="https://code.google.com/p/eyes-free/source/browse/trunk/devtools/accessibility-test-framework/src/main/java/com/google/android/apps/common/testing/accessibility/framework/integrations/espresso/AccessibilityValidator.java">AccessibilityValidator</a>                class in the accessibility test framework.</p>
+        </google-codelab-step>
+        <google-codelab-step label="Espresso Intent " duration="45 ">
+            <aside class="special">Open step-9-espresso-intent in Android Studio</aside>
+            <ul>
+                <li>Download Espresso-Intents</li>
+                <li>IntentsTestRule</li>
+                <li>Intent validation</li>
+                <li>Intent stubbing</li>
+                <li>Intent matchers</li>
+            </ul>
+            <p>
+                An intent is an abstract description of an operation to be performed. It can be used with startActivity to launch an Activity, broadcastIntent to send it to any interested BroadcastReceiver components, and startService(Intent) or bindService(Intent, ServiceConnection,
+                int) to communicate with a background Service. An Intent provides a facility for performing late runtime binding between the code in different applications. Its most significant use is in the launching of activities, where it can be thought
+                of as the glue between activities. It is basically a passive data structure holding an abstract description of an action to be performed.
+            </p>
+            <img fsrc="img/intent-structure.png" />
+            <p>Espresso-Intents is an extension to Espresso, which enables validation and stubbing of Intents sent out by the application under test. It’s like <a href="http://mockito.org/">Mockito</a>, but for Android Intents.</p>
+
+            <h2 id="download-espresso-intents">Download Espresso-Intents</h2>
+            <ul>
+                <li>Open your app’s <code class="highlighter-rouge">build.gradle</code> file. This is usually not the top-level <code class="highlighter-rouge">build.gradle</code> file but <code class="highlighter-rouge">app/build.gradle</code>.</li>
+            </ul>
+
+            <p>Add the following line inside dependencies:</p>
+
+            <figure class="highlight"><pre><code class="language-groovy" data-lang="groovy">androidTestCompile ('com.android.support.test.espresso:espresso-intents:2.2.2',{
+    exclude group: 'com.android.support'
+})</code></pre></figure>
+
+            <p>Espresso-Intents is only compatible with Espresso 2.1+ and the testing support library 0.3 so make sure you update those lines as well:</p>
+
+            <figure class="highlight"><pre><code class="language-groovy" data-lang="groovy">androidTestCompile ('com.android.support.test:rules:0.5',{
+    exclude group: 'com.android.support'
+})
+androidTestCompile('com.android.support.test:runner:0.5', {
+    exclude group: 'com.android.support'
+})
+androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    exclude group: 'com.android.support'
+})</code></pre></figure>
+
+            <h2 id="intentstestrule">IntentsTestRule</h2>
+            <p>Use <code class="highlighter-rouge">IntentsTestRule</code> instead of <code class="highlighter-rouge">ActivityTestRule</code> when using Espresso-Intents.
+                <code class="highlighter-rouge">IntentsTestRule</code> makes it easy to use Espresso-Intents APIs in functional UI tests. This class is an extension of <code class="highlighter-rouge">ActivityTestRule</code>, which initializes Espresso-Intents
+                before each test annotated with <code class="highlighter-rouge">@Test</code> and releases Espresso-Intents after each test run. The activity will be terminated after each test and this rule can be used in the same way as <code class="highlighter-rouge">ActivityTestRule</code>.</p>
+            <h2 id="intent-validation">Intent validation</h2>
+            <p>Espresso-Intents records all intents that attempt to launch activities from the application under test. Using the intended API (cousin of <em><code class="highlighter-rouge">Mockito.verify</code></em>), you can assert that a given intent has
+                been seen.</p>
+            <img fsrc="img/profile-activity.png" />
+            <p>When user click on <i>Sign Up</i> button, Register Activity will be shown, username and email address will be sent back to ProfileActivity.</p>
+            <p>Similar to <i>Select Avatar</i> button, selected image will be shown under <i>Select Avatar</i> button</p>
+            <p>An example test that simply validates an outgoing intent:</p>
+            <pre><code>
+@Test
+public void testSignUp() throws Exception {
+    
+    onView(withId(R.id.button_sign_up)).perform(click());
+    //verify that when user click on button_sign_up, an intent to package com.example.espresso is fired
+    intended(toPackage("com.example.espresso"));
+}</code></pre>
+            <p><strong>It's your turn: test <i>Select Avatar</i> button</strong></p>
+            <pre><code>@Test
+public void testSelectAvatar() throws Exception {
+    //Intent imageIntent = new Intent(Intent.ACTION_PICK,
+    //             android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+}
+        </code></pre>
+
+            <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">validateIntentSentToPackage</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">// User action that results in an external "phone" activity being launched.</span>
+    <span class="n">user</span><span class="o">.</span><span class="na">clickOnView</span><span class="o">(</span><span class="n">system</span><span class="o">.</span><span class="na">getView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">callButton</span><span class="o">));</span>
+
+    <span class="c1">// Using a canned RecordedIntentMatcher to validate that an intent resolving</span>
+    <span class="c1">// to the "phone" activity has been sent.</span>
+    <span class="n">intended</span><span class="o">(</span><span class="n">toPackage</span><span class="o">(</span><span class="s">"com.android.phone"</span><span class="o">));</span>
+<span class="o">}</span></code></pre></figure>
+
+            <h2 id="intent-stubbing">Intent stubbing</h2>
+            <p>Using the intending API (cousin of <em><code class="highlighter-rouge">Mockito.when</code></em>), you can provide a response for activities that are launched with startActivityForResult (this is particularly useful for external activities
+                since we cannot manipulate the user interface of an external activity nor control the <code class="highlighter-rouge">ActivityResult</code> returned to the activity under test):</p>
+
+            <p>An example test with intent stubbing:</p>
+            <pre><code>@Test
+public void testSelectContact() throws Exception {
+    Intent intent = new Intent();
+    //put 'Obama' to intent
+    intent.putExtra(SignUpActivity.EXTRA_FULLNAME, "Obama");
+    //create a result
+    Instrumentation.ActivityResult activityResult = new Instrumentation.ActivityResult(Activity.RESULT_OK, intent);
+    //when and intent to package com.example.espresso is seen, response with activityResult
+    intending(toPackage("com.example.espresso")).respondWith(activityResult);<
+}</code></pre>
+            <p><strong>It's your turn: test <i>Select Avatar</i> button by using itending</strong></p>
+            <p>This is an another example</p>
+            <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">activityResult_IsHandledProperly</span><span class="o">()</span> <span class="o">{</span>
+    <span class="c1">// Build a result to return when a particular activity is launched.</span>
+    <span class="n">Intent</span> <span class="n">resultData</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">();</span>
+    <span class="n">String</span> <span class="n">phoneNumber</span> <span class="o">=</span> <span class="s">"123-345-6789"</span><span class="o">;</span>
+    <span class="n">resultData</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="s">"phone"</span><span class="o">,</span> <span class="n">phoneNumber</span><span class="o">);</span>
+    <span class="n">ActivityResult</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityResult</span><span class="o">(</span><span class="n">Activity</span><span class="o">.</span><span class="na">RESULT_OK</span><span class="o">,</span> <span class="n">resultData</span><span class="o">);</span>
+
+    <span class="c1">// Set up result stubbing when an intent sent to "contacts" is seen.</span>
+    <span class="n">intending</span><span class="o">(</span><span class="n">toPackage</span><span class="o">(</span><span class="s">"com.android.contacts"</span><span class="o">)).</span><span class="na">respondWith</span><span class="o">(</span><span class="n">result</span><span class="o">));</span>
+
+    <span class="c1">// User action that results in "contacts" activity being launched.</span>
+    <span class="c1">// Launching activity expects phoneNumber to be returned and displays it on the screen.</span>
+    <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">pickButton</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">click</span><span class="o">());</span>
+
+    <span class="c1">// Assert that data we set up above is shown.</span>
+    <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">phoneNumber</span><span class="o">).</span><span class="na">check</span><span class="o">(</span><span class="n">matches</span><span class="o">(</span><span class="n">withText</span><span class="o">(</span><span class="n">phoneNumber</span><span class="o">)));</span>
+<span class="o">}</span></code></pre></figure>
+
+            <h2 id="intent-matchers">Intent matchers</h2>
+            <p><code class="highlighter-rouge">intending</code> and <code class="highlighter-rouge">intended</code> methods take a hamcrest <code class="highlighter-rouge">Matcher&lt;Intent&gt;</code> as an argument. Hamcrest is library of matcher objects
+                (also known as constraints or predicates). You have these options:</p>
+
+            <ul>
+                <li>Use an existing intent matcher: Easiest option, which should almost always be preferred.</li>
+                <li>Implement your own intent matcher: Most flexible option (see the section entitled “Writing custom matchers” in the <a href="http://code.google.com/p/hamcrest/wiki/Tutorial">Hamcrest tutorial</a>)</li>
+            </ul>
+
+            <p>An example of intent validation with existing Intent matchers:</p>
+
+            <figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="n">intended</span><span class="o">(</span><span class="n">allOf</span><span class="o">(</span>
+    <span class="n">hasAction</span><span class="o">(</span><span class="n">equalTo</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">ACTION_VIEW</span><span class="o">)),</span>
+    <span class="n">hasCategories</span><span class="o">(</span><span class="n">hasItem</span><span class="o">(</span><span class="n">equalTo</span><span class="o">(</span><span class="n">Intent</span><span class="o">.</span><span class="na">CATEGORY_BROWSABLE</span><span class="o">))),</span>
+    <span class="n">hasData</span><span class="o">(</span><span class="n">hasHost</span><span class="o">(</span><span class="n">equalTo</span><span class="o">(</span><span class="s">"www.google.com"</span><span class="o">))),</span>
+    <span class="n">hasExtras</span><span class="o">(</span><span class="n">allOf</span><span class="o">(</span>
+        <span class="n">hasEntry</span><span class="o">(</span><span class="n">equalTo</span><span class="o">(</span><span class="s">"key1"</span><span class="o">),</span> <span class="n">equalTo</span><span class="o">(</span><span class="s">"value1"</span><span class="o">)),</span>
+        <span class="n">hasEntry</span><span class="o">(</span><span class="n">equalTo</span><span class="o">(</span><span class="s">"key2"</span><span class="o">),</span> <span class="n">equalTo</span><span class="o">(</span><span class="s">"value2"</span><span class="o">)))),</span>
+        <span class="n">toPackage</span><span class="o">(</span><span class="s">"com.android.browser"</span><span class="o">)));</span></code></pre></figure>
+
+
+            </div>
+        </google-codelab-step>
+
+        <google-codelab-step label="Espresso Web" duration="40">
+            <aside class="special">Open step-10-espresso-web in Android Studio</aside>
+            <p>Espresso-web is an entry point to work with WebViews on Android. It uses Atoms from the popular WebDriver API to introspect into and control the behavior of a WebView.</p>
+
+            <p>Similar to onData, WebView interactions are actually composed of several View Atoms. An Atom can be seen as a ViewAction, a self contained unit which performs an action in your UI. However, they need to be properly orchestrated and are quite
+                verbose. Web and WebInteraction wrap this boilerplate and give an Espresso-like feel to interacting with WebViews.</p>
+            <p><strong>Download Espresso-Web</strong></p>
+            <ul>
+                <li>Open your app's <code>app/build.gradle</code></li>
+                <li>Add te following line inside dependencies:</li>
+            </ul>
+            <pre><code>androidTestCompile ()'com.android.support.test.espresso:espresso-web:2.2.2',{
+    exclude group: 'com.android.support'
+})</code></pre>
+            <h2>Common WebInteractions</h2>
+            <ul>
+                <li><code class="highlighter-rouge">withElement(ElementReference)</code> will supply the <code class="highlighter-rouge">ElementReference</code> to the Atom. Example:
+                </li>
+                <pre><code>//&lt;p id="title"&gt;Locator.ID,"title"</p>
+onWebView().withElement(findElement(Locator.ID, "title"));
+//&lt;p name="title"&gt;Locator.NAME,"name"
+onWebView().withElement(findElement(Locator.NAME, "name"));
+//&lt;p class="special"&gt;Locator.class,"special"
+onWebView().withElement(findElement(Locator.CLASS, "special"));
+</code></pre>
+                <li><code class="highlighter-rouge">check(WebAssertion)</code> will evaluate an assertion. Example:
+                </li>
+                <pre><code>//&lt;p name=&quot;title&quot;&gt;&lt;strong&gt;Github Terms and Conditions of Service&lt;/strong&gt;&lt;/p&gt;
+onWebView().withElement(findElement(Locator.NAME,"title"))
+    .check(webMatches(getText(), containsString("Github Terms and Conditions of Service")));</code></pre>
+                <li><code class="highlighter-rouge">perform(Atom)</code> will execute the provided atom within the current context. Example:
+                </li>
+                <pre><code>onWebView().withElement(findElement(Locator.NAME,"name")) //find element with name='name'
+    .perform(clearElement()) //clear text
+    .perform(webKeys("Liz")); //type Liz</code></pre>
+                <li><code class="highlighter-rouge">reset()</code> is necessary when a prior action (for example a click) introduces a navigation change that invalidates the ElementReference and WindowReference pointers.</li>
+            </ul>
+            <h2>WebView example</h2>
+            <a href="tos.html"><code>testTermOfUse</code></a>
+            <br>
+            <a href="agreement.html"><code>testAcceptAgreement</code></a>
+            <pre><code>@RunWith(AndroidJUnit4.class)
+public class TermOfUseActivityTest {
+    @Rule
+    public ActivityTestRule<TermOfUseActivity> mActivityTestRule =
+            new ActivityTestRule<TermOfUseActivity>(TermOfUseActivity.class, false, false);
+
+
+    @Test
+    public void testTermOfUse() throws Exception {
+        mActivityTestRule.launchActivity(null);
+        onWebView().withElement(findElement(Locator.NAME,"title"))
+                .check(webMatches(getText(),
+                        containsString("Github Terms and Conditions of Service")));
+    }
+
+    @Test
+    public void testAcceptAgreement() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra(TermOfUseActivity.ARG_FILE, "agreement.html");
+        mActivityTestRule.launchActivity(intent);
+        onWebView().withElement(findElement(Locator.NAME,"name"))
+                .perform(clearElement())
+                .perform(webKeys("Liz"))
+                .withElement(findElement(Locator.NAME,"submit"))
+                .perform(webClick())
+                .withElement(findElement(Locator.ID,"instruction"))
+                .check(webMatches(DriverAtoms.getText(),
+                        Matchers.containsString("Please accept the agreement")));
+
+        onWebView().withElement(findElement(Locator.NAME,"name"))
+                .perform(clearElement())
+                .perform(webKeys("Liz"))
+                .withElement(findElement(Locator.NAME,"agree"))
+                .perform(webClick())
+                .withElement(findElement(Locator.NAME,"submit"))
+                .perform(webClick())
+                .withElement(findElement(Locator.ID,"instruction"))
+                .check(webMatches(DriverAtoms.getText(), Matchers.containsString("Thank you Liz!")));
+    }
+
+}</code></pre>
+        </google-codelab-step>
+
+        <google-codelab-step label="Espresso Idling Resource " duration="40 ">
+
+            <aside class="special">Open step-11-espresso-idling in Android Studio</aside>
+
+            <ul>
+                <li><a href="#creating-and-registering-idling-resources" id="markdown-toc-creating-and-registering-idling-resources ">Creating and registering Idling Resources</a></li>
+                <li><a href="#idling-resource-approaches" id="markdown-toc-idling-resource-approaches ">Idling Resource approaches</a></li>
+            </ul>
+
+            <p>The centerpiece of Espresso is its ability to seamlessly synchronize all test operations with the application being tested. By default, Espresso waits for UI events in the current message queue to be handled and for default AsyncTasks to complete
+                before it moves on to the next test operation.</p>
+
+            <p>However, there are instances where applications perform background operations (such as communicating with web services) via non-standard means; for example: direct creation and management of threads.</p>
+
+            <p>In such cases, you have to use <strong>Idling Resources</strong> to inform Espresso of the app’s long-running operations.</p>
+
+            <h2 id="creating-and-registering-idling-resources">Creating and registering Idling Resources</h2>
+
+            <p>You can implement the <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/idling-resource/src/main/java/android/support/test/espresso/IdlingResource.java ">IdlingResource</a> interface yourself
+                or use an already-existing implementation, such as <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/contrib/src/main/java/android/support/test/espresso/contrib/CountingIdlingResource.java ">CountingIdlingResource</a>,
+                included in the <code class="highlighter-rouge ">espresso-idling-resource</code> package.</p>
+
+            <p>This interface needs to be exposed to the test or created within it and injected into the application. Then, register one or more of your Idling Resource(s) with Espresso by calling <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/core/src/main/java/android/support/test/espresso/Espresso.java ">Espresso.registerIdlingResource()</a>                in the test setup.</p>
+
+            <p>Check out the <a href="https://github.com/googlesamples/android-testing/tree/master/ui/espresso/IdlingResourceSample ">Espresso Idling Resource sample</a> or
+                <a href="https://github.com/innovatube/android-boilerplate ">Innovatube boilerplate</a>
+            </p>
+
+            <h2 id="idling-resource-approaches">Idling Resource approaches</h2>
+
+            <p>There are two common ways to implement Idling Resources:</p>
+
+            <ul>
+                <li><strong>Counting running jobs</strong>: When a job starts, increment a counter. When it finishes, decrement it. The app is idle if the counter is zero. This approach is very simple and accounts for most situations. <a href="https://android.googlesource.com/platform/frameworks/testing/+/android-support-test/espresso/contrib/src/main/java/android/support/test/espresso/contrib/CountingIdlingResource.java ">CountingIdlingResource</a>                    does exactly this.</li>
+                <li><strong>Querying state</strong>: It might be more reliable to ask a work queue or an HTTP client (or whatever is doing the background work) if it is busy. If the state is exposed, implementing an Idling Resource is trivial.</li>
+            </ul>
+            <p><strong> Counting running jobs example: </strong></p>
+            <p><code>step-10-espresso-idling</code> has 2 helper class: <code class="highlighter-rouge ">EspressoIdlingResource</code>,<code class="highlighter-rouge ">SimpleCountingIdlingResource</code>:</p>
+            <p>It's easy to use, just call <code class="highlighter-rouge ">EspressoIdlingResource.increment();</code> before you perform a background thread, and call <code class="highlighter-rouge ">EspressoIdlingResource.decrement();</code> when you're
+                done
+            </p>
+            <p>In your test class call <code>registerIdlingResources(EspressoIdlingResource.getIdlingResource());</code> before each test, and <code>unregisterIdlingResources(EspressoIdlingResource.getIdlingResource());</code> on <code>tearDown()</code>                method.</p>
+            <p>Navigate to <code>HomePresenter</code> and uncomment line <b><i>33 , 52</i></b>. then run <code>HomeActivityTestWithoutDialog</code>.</p>
+            <pre><code>@RunWith(AndroidJUnit4.class)
+public class HomeActivityTestWithoutDialog {
+    @Rule
+    public ActivityTestRule mActivityTestRule = new ActivityTestRule(HomeActivity.class);
+    private IdlingResource idlingResource;
+
+    @Before
+    public void setUp() throws Exception {
+        idlingResource = EspressoIdlingResource.getIdlingResource();
+        registerIdlingResources(idlingResource);
+    }
+
+    @Test
+    public void testSearchUserSuccess() throws Exception {
+        onView(withId(R.id.rl_user)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.edit_username)).perform(typeText("google "), pressBack());
+        onView(withId(R.id.button_search)).perform(click());
+        onView(withId(R.id.rl_user)).check(matches(isDisplayed()));
+        onView(withId(R.id.text_login)).check(matches(withText("google ")));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        unregisterIdlingResources(idlingResource);
+    }
+}</code></pre>
+            <p>You can register and unregister IdlingResources <b>anywhere</b>.</p>
+            <p><strong>Practice: <code>HomeActivityTestWithoutDialog</code> doesn't check dialog, create an another class and test it, with username is innovatube</strong>.</p>
+
+            <p><strong>Querying state example:</strong></p>
+            <pre><code>public class LoadingProgressIdlingResource implements IdlingResource {
+    private final FragmentManager fragmentManager;
+    private final String tag;
+    private ResourceCallback resourceCallback;
+
+    public LoadingProgressIdlingResource(FragmentManager fragmentManager, String tag) {
+        this.fragmentManager = fragmentManager;
+        this.tag = tag;
+    }
+
+    @Override
+    public String getName() {
+        return LoadingProgressIdlingResource.class.getSimpleName() + ": " + tag;
+    }
+
+    @Override
+    public boolean isIdleNow() {
+        boolean isIdling = fragmentManager.findFragmentByTag(tag) == null;
+        if (isIdling) {
+            resourceCallback.onTransitionToIdle();
+        }
+        return isIdling;
+    }
+
+    @Override
+    public void registerIdleTransitionCallback(ResourceCallback callback) {
+        this.resourceCallback = callback;
+    }
+}</code></pre>
+
+            <pre><code>@RunWith(AndroidJUnit4.class)
+public class CreateAccountActivityRealTest {
+
+    @Rule
+    public ActivityTestRule&lt;CreateAccountActivity&gt; activityActivityTestRule =
+            new ActivityTestRule&lt;&gt;(CreateAccountActivity.class);
+    private LoadingProgressIdlingResource idlingResource;
+
+    @Before
+    public void setUp() throws Exception {
+        idlingResource = new LoadingProgressIdlingResource(activityActivityTestRule.getActivity()
+                .getSupportFragmentManager(), LoadingDialog.TAG);
+        registerIdlingResources(idlingResource);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        unregisterIdlingResources(idlingResource);
+
+    }
+
+}
+</code></pre>
+
+            <p>Note that there are Idling Resource implementations for popular libraries, like <a href="https://github.com/JakeWharton/okhttp-idling-resource ">okhttp-idling-resource</a>.</p>
+        </google-codelab-step>
+        <google-codelab-step label="Practice" duration="60">
+            <aside class="special">Open step-12-codelab-final.zip in Android Studio</aside>
+            <p>The codelab project has three build variants</p>
+            <table>
+                <tbody>
+                    <tr>
+                        <td colspan="1" rowspan="1">
+                            <p><code>mockDebug</code></p>
+                        </td>
+                        <td colspan="1" rowspan="1">
+                            <p>Uses the <code>mock</code> <em>source set </em>to inject a mock data repository where notes are stored</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="1" rowspan="1">
+                            <p><code>prodDebug</code></p>
+                        </td>
+                        <td colspan="1" rowspan="1">
+                            <p><code>Debug</code> build that uses the <code>prod</code> <em>source set</em> to inject the ‘real' production data repository</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="1" rowspan="1">
+                            <p><code>prodRelease</code></p>
+                        </td>
+                        <td colspan="1" rowspan="1">
+                            <p>Signed <code>Release</code> build that uses a ‘real' data repository</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>The first test you're writing is using the <code>prodDebug</code> variant - make sure to select it for your test artifact before continuing.</p>
+            <img fsrc="img/7d867483dc450c86.png" />
+            <p><strong>Don't forget to disable animation</strong></p>
+            <img style="max-width: 335.08px;" fsrc="img/96bf3222a3a23c5f.png" />
+            <h2>Espresso Test 1: Opening the ‘Add Note' screen</h2>
+            <p><strong>androidTest/.../NotesScreenTest.java</strong></p>
+            <pre><code> @Test
+public void clickAddNoteButton_opensAddNoteUi() throws Exception {
+    // Click on the add note button
+
+    // Check if the add note screen is displayed
+}
+</code></pre>
+            <h2>Espresso Test 2: Adding a note</h2>
+            <p><strong>androidTest/.../NotesScreenTest.java</strong></p>
+            <pre><code>@Test
+public void addNoteToNotesList() throws Exception {
+    String newNoteTitle = "Espresso";
+    String newNoteDescription = "UI testing for Android";
+
+    // Click on the add note button
+
+    // Add note title and description
+    // Type new note title
+
+    // Save the note
+
+    // Scroll notes list to added note, by finding its description
+
+    // Verify note is displayed on screen
+}
+</code></pre>
+            <h2>Espresso Test 3: Clicking a note</h2>
+            <h3>Switch build variant to mockDebug</h3>
+            <img fsrc="img/791d63860007f7b8.png" />
+            <p><strong>androidTestMock/.../NoteDetailScreenTest.java</strong></p>
+            <pre><code>@Before
+public void intentWithStubbedNoteId() {
+    // Add a note stub to the fake service api layer.
+    FakeNotesServiceApiImpl.addNotes(NOTE);
+
+    // Lazily start the Activity from the ActivityTestRule this time to inject the start Intent
+    Intent startIntent = new Intent();
+    startIntent.putExtra(NoteDetailActivity.EXTRA_NOTE_ID, NOTE.getId());
+    mNoteDetailActivityTestRule.launchActivity(startIntent);
+
+    registerIdlingResource();
+}
+
+    @Test
+    public void noteDetails_DisplayedInUi() throws Exception {
+    // Check that the note title, description and image are displayed
+}
+</code></pre>
+
+            <h2>Espresso Test 4: Intent stubbing with add note screen test</h2>
+            <h3>Switch build variant to mockDebug</h3>
+            <img fsrc="img/791d63860007f7b8.png" />
+            <p><strong>androidTestMock/.../AddNoteScreenTest.java</strong></p>
+            <pre><code>@Test
+public void addImageToNote_ShowsThumbnailInUi() {
+    // Create an Activity Result which can be used to stub the camera Intent
+    ActivityResult result = createImageCaptureActivityResultStub();
+    // If there is an Intent with ACTION_IMAGE_CAPTURE, intercept the Intent and respond with
+    // a stubbed result.
+
+    // Check thumbnail view is not displayed
+
+    //open actionbar menu
+
+    // Click on add picture option
+
+    // Check that the stubbed thumbnail is displayed in the UI
+}
+
+@Test
+public void errorShownOnEmptyMessage() {
+    // Add note title and description with empty String
+
+    // Save the note
+
+    // Verify empty notes snackbar is shown
+    String emptyNoteMessageText = getTargetContext().getString(R.string.empty_note_message);
+
+}
+</code></pre>
+            <h2>Espresso Test 5: Navigation Drawer</h2>
+            <p><strong>androidTest/.../AppNavigationTest.java</strong></p>
+            <pre><code>@Test
+public void clickOnStatisticsNavigationItem_ShowsStatisticsScreen() {
+    // Open Drawer to click on navigation.
+
+    // Start statistics screen.
+
+    String expectedNoStatisticsText = InstrumentationRegistry.getTargetContext()
+            .getString(R.string.no_statistics_available);
+    // Check that statistics Activity was opened.
+}
+
+@Test
+public void clickOnAndroidHomeIcon_OpensNavigation() {
+    // Check that left drawer is closed at startup
+
+    // Open Drawer
+
+    // Check if drawer is open
+
+}
+</code></pre>
+        </google-codelab-step>
+        <google-codelab-step label="UI Automator" duration="50">
+            <h2>UI Automator</h2>
+
+            <p>The UI Automator testing framework provides a set of APIs to build UI tests that interactions on user apps and system apps as well as different apps. The UI Automator is well-suit for writing black box automated test.</p>
+
+            <p>The key features of the UI Automator testing framewok include:</p>
+
+            <ul>
+                <li>UI Automator Viewer: a viewer to inspect layout hierachy.</li>
+                <li>An <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html">API</a> to retrieve state information and perform operations on the target device, such as: press home, turn on screen, press back, take
+                    a screenshot.</li>
+                <li>APIs that support cross-app UI Testing.</li>
+            </ul>
+            <h3>UI Automator Viewer</h3>
+            The uiautomatorviewer tool provides a convenient visual interface to inspect the layout hierarchy and view the properties of UI components that are visible on the foreground of the device. This information lets you create more fine-grained tests using
+            UI Automator. For example, you can create a UI selector that matches a specific visible property.
+            <br>To launch the uiautomatorviewer tool:
+            <ul>
+                <li>Launch the target app on a physical device.</li>
+                <li>Connect the device to your development machine.</li>
+                <li>Open a terminal window and navigate to the &lt;android-sdk&gt;/tools/ directory.</li>
+                <i>use <b>cd</b> command to change directory</i>
+                <pre><code>cd /PATH/TO/YOUR/ANDROID-SDK/
+cd tools/
+</code></pre>
+                <p>if you're using Ubuntu 16.04 or higher, <i>right click</i> in &lt;android-sdk&gt;/tools, select <i>Open in terminal</i>.</p>
+                <p>if you're using Windows 7 or higher, <i>shift+right click</i> in &lt;android-sdk&gt;/tools, select <i>Open Command Window Here</i>.</p>
+                <li>Run the tool with this command:</li>
+                <pre><code>
+$ uiautomatorviewer
+                    </code></pre>
+            </ul>
+            <p>To view the UI properties for your application:</p>
+            <ol>
+                <li>In the <code>uiautomatorviewer</code> interface, click the <strong>Device Screenshot</strong> button.
+                </li>
+                <li>Hover over the snapshot in the left-hand panel to see the UI components identified by the
+                    <code>uiautomatorviewertool</code>. The properties are listed in the lower right-hand panel and the layout hierarchy in the upper right-hand panel.</li>
+                <li>Optionally, click on the <strong>Toggle NAF Nodes</strong> button to see UI components that are non-accessible to UI Automator. Only limited information may be available for these components.
+                </li>
+            </ol>
+            <a href="img/uiautomatorviewer.png" data-lightbox="example"><img fsrc="img/uiautomatorviewer.png" data-lightbox="uiautomatorviewer" /></a>
+            <h3>UI Automator APIs</h3>
+
+            <p>The UI Automator APIs allow you to write robust tests without needing to know about the implementation details of the app that you are targeting.</p>
+
+            <ul>
+                <ul>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/By.html" target="_blank" title="By Class">By</a> &ndash; a utility class which enables the creation of BySelector.</li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/BySelector.html" target="_blank" title="BySelector">BySelector</a> &ndash; Specifies a criteria for matching UI elements during a call to findObject(&hellip;)</li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiCollection.html" target="_blank" title="UiCollection">UiCollection</a> &ndash; This class is used to enumerate UI elements for the purpose of counting,
+                        or targeting a sub elements by a child&rsquo;s text or description.
+                        <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html" target="_blank" title="UiObject"></a>
+                    </li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html" target="_blank" title="UiObject">UiObject</a> &ndash; A UiObject contains information to help it locate a matching view at runtime based
+                        on the UiSelector properties specified in its constructor. Once UiObject instance is created it can be reused for different views that match the selector criteria.</li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject2.html" target="_blank" title="UiObject2">UiObject2</a> &ndash; Represents a UI element. This is slightly different from UiObject as UiObject2
+                        elements can be used even an underlying view object is terminated.</li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiScrollable.html" target="_blank" title="UiScrollable">UiScrollable</a><span>&nbsp;</span>&ndash;&nbsp;UiScrollable is a UiCollection&nbsp;and provides
+                        support for searching for items in scrollable layout elements.</li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiSelector.html" target="_blank" title="UiSelector">UiSelector</a> &ndash; This specifies the UI elements in the layout hierarchy for tests to target,
+                        filtered by properties such as text value, content-description, class name, and state information, among others.</li>
+                    <li><a href="https://developer.android.com/reference/android/support/test/uiautomator/Configurator.html" target="_blank" title="Configurator">Configurator</a><span>&nbsp;</span>&ndash; Allows to set key parameters for running uiautomator
+                        tests. The new settings take effect immediately and can be changed any time during a test run</li>
+                </ul>
+
+            </ul>
+
+            <h3>Set Up UI Automator</h3>
+
+            <p>in the build.gradle file of your app module, you mus add a UI Automator library.</p>
+
+            <pre><code>dependencies {
+    ...
+    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
+}
+</code></pre>
+            <p>If your minSDK is lower than 18, you must add the following line to your src/androidTest/AndroidManifest.xml, if you don't have it, create a new one</p>
+            <pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;manifest xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:tools=&quot;http://schemas.android.com/tools&quot;
+    package=&quot;YOUR.PACKAGE.NAME&quot;&gt;
+
+    &lt;uses-sdk
+        android:minSdkVersion=&quot;18&quot;
+        tools:overrideLibrary=&quot;android.support.test.uiautomator.v18&quot; /&gt;
+&lt;/manifest&gt;
+</code></pre>
+            <h2>Create your first UI Automator Test Class.</h2>
+
+            <p>Create your UI Automator test class, and put it under androidTest.</p>
+
+            <p>Add the @RunWith(AndroidJUnit4.class) annotaion at the beginning of your test class definition. You also need to specify the<a href="https://developer.android.com/reference/android/support/test/runner/AndroidJUnitRunner.html"><code>AndroidJUnitRunner</code></a><span>&nbsp;class provided in the Android Testing Support Library as your default test runner</span></p>
+            <p>Implement the following programming model in your UI Automator test class:</p>
+
+            <ol>
+                <li>Get a <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html"><code>UiDevice</code></a><span>&nbsp;</span>object to access the device you want to test, by calling the <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html#getInstance(android.app.Instrumentation)"><code>getInstance()</code></a><span>&nbsp;</span>method
+                    and passing it an <code><a href="https://developer.android.com/reference/android/app/Instrumentation.html">Instrumentation</a></code>object as the argument.</li>
+                <pre><code>UiDevice mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());</code></pre>
+                <li>Get a<span>&nbsp;</span><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html"><code>UiObject</code></a> object to access a UI component that is displayed on the device (for example, the current
+                    view in the foreground), by calling the<span>&nbsp;</span><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html#findObject(android.support.test.uiautomator.UiSelector)"><code>findObject()</code></a>                    method.</li>
+                <pre><code>UiObject nameEditText = mUiDevice.findObject(new UiSelector().resId("com.example.uiautomator:id/edit_name"));</code></pre>
+                <li>Simulate a specific user interaction to perform on that UI component, by calling a<span>&nbsp;</span><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html"><code>UiObject</code></a> method; for
+                    example, call<a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html#performMultiPointerGesture(android.view.MotionEvent.PointerCoords[]...)"><code>performMultiPointerGesture()</code></a><span>&nbsp;</span>to
+                    simulate a multi-touch gesture, and <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html#setText(java.lang.String)"><code>setText()</code></a><span>&nbsp;</span>to edit a text field. You can
+                    call on the APIs in steps 2 and 3 repeatedly as necessary to test more complex user interactions that involve multiple UI components or sequences of user actions.</li>
+                <pre><code>nameEditText.setText("Blah Blah");
+mUiDevice.findObject(new UiSelector().text("GREETING")).click();
+MotionEvent.PointerCoords pc1 = new MotionEvent.PointerCoords();
+pc1.x = 200;
+pc1.y = 200;
+pc1.pressure = 1;
+pc1.size = 10;
+......
+pc.PointerCoords[] coords1 = new MotionEvent.PointerCoords[1];
+coords1[0] = pc1;
+pc.PointerCoords[] coords2 = new MotionEvent.PointerCoords[1];
+coords12[0] = pc2;
+pc.PointerCoords[] coords3 = new MotionEvent.PointerCoords[2];
+coords13[0] = pc3;
+coords13[1] = pc3;
+touchLayout.performMultiPointerGesture(coords1, coords2, coords3);</code></pre>
+                <li>Check that the UI reflects the expected state or behavior, after these user interactions are performed.</li>
+                <pre><code>assertEquals("Madagascar", madagascar.getChild(new UiSelector().className(TextView.class)).getText());</code></pre>
+            </ol>
+
+            <h3>Accessing Device's State</h3>
+
+            <p>The <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html"><code>UiDevice</code></a><span>&nbsp;</span>object is the primary way you access and manipulate the state of the device. In your tests, you
+                can call <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html"><code>UiDevice</code></a><span>&nbsp;</span>methods to check for the state of various properties, such as current orientation or
+                display size. Your test can use the <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html"><code>UiDevice</code></a><span>&nbsp;</span>object to perform device-level actions, such as forcing the
+                device into a specific rotation, pressing D-pad hardware buttons, and pressing the Home and Menu buttons.</p>
+
+            <p>It&rsquo;s good practice to start your test from the Home screen of the device. From the Home screen (or some other starting location you&rsquo;ve chosen in the device), you can call the methods provided by the UI Automator API to select and
+                interact with specific UI elements.</p>
+
+            <p>The following code snippet shows how your test might get an instance of <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html"><code>UiDevice</code></a><span>&nbsp;</span>and simulate a Home button
+                press:
+            </p>
+            <pre><code>@RunWith(AndroidJUnit4.class)
+public class GreetingTest {
+
+    private static final String PACKAGE_NAME = "com.example.uiautomator";
+    private static final int LAUNCH_TIMEOUT = 5000;
+    private UiDevice mUiDevice;
+
+    @Before
+    public void setUp() throws Exception {
+        // Initialize UiDevice instance
+        mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        // Return to home
+        mUiDevice.pressHome();
+        //get launcher package name
+        final String launcherPackage = mUiDevice.getLauncherPackageName();
+        assertNotNull(launcherPackage);
+        mUiDevice.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT);
+        //get context
+        Context context = InstrumentationRegistry.getContext();
+        //create target package name
+        Intent intent = context.getPackageManager().getLaunchIntentForPackage(PACKAGE_NAME);
+        //clear all instance
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        //open app
+        context.startActivity(intent);
+        //wait until applications is started
+        mUiDevice.wait(Until.hasObject(By.pkg(PACKAGE_NAME).depth(0)), LAUNCH_TIMEOUT);
+    }
+}</code></pre>
+            <h3>Accessing UI Components</h3>
+            <p>Use the <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiDevice.html#findObject(android.support.test.uiautomator.UiSelector)"><code>findObject()</code></a><span>&nbsp;</span>method to retrieve a <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html"><code>UiObject</code></a><span>&nbsp;</span>which
+                represents a view that matches a given selector criteria. You can reuse the<a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html"><code>UiObject</code></a> instances that you have created in other
+                parts of your app testing, as needed. Note that the UI Automator test framework searches the current display for a match every time your test uses a<span>&nbsp;</span><a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html"><code>UiObject</code></a>                instance to click on a UI element or query a property.</p>
+
+            <p>The following snippet shows how your test might construct <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObject.html"><code>UiObject</code></a><span>&nbsp;</span>instances that represent a Greeting button
+                and a Edit Text field.</p>
+
+            <img fsrc="img/ui-automator-findview.png" />
+            <p>The <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiSelector.html"><code>UiSelector</code></a><span>&nbsp;</span>class presents a query for sepecific elements in the currently displayed UI.</p>
+
+            <p>If more than one matchin element is found, the first matching element in the layout hierarchy is returned as the target UiObject. When constructing a <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiSelector.html"><code>UiSelector</code></a>,
+                you can chain together multiple properties to refine your search. If no matching UI element is found, a<a href="https://developer.android.com/reference/android/support/test/uiautomator/UiObjectNotFoundException.html"><code>UiAutomatorObjectNotFoundException</code></a><span>&nbsp;</span>is
+                thrown.
+            </p>
+
+            <p>You can use the <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiSelector.html#childSelector(android.support.test.uiautomator.UiSelector)"><code>childSelector()</code></a><span>&nbsp;</span>method to nest
+                multiple <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiSelector.html"><code>UiSelector</code></a><span>&nbsp;</span>instances. For example, the following code example shows how your test might specify
+                a search to find the first <code><a href="https://developer.android.com/reference/android/widget/ListView.html">ListView</a></code><span>&nbsp;</span>in the currently displayed UI, then search within that <code><a href="https://developer.android.com/reference/android/widget/ListView.html">ListView</a></code><span>&nbsp;</span>to
+                find a UI element with the text property Apps.</p>
+            <pre><code>//find the madagascar
+UiObject madagascar = mUiDevice.findObject(new UiSelector()
+        .resourceId("com.example.uiautomator:id/list_country")
+        .childSelector(new UiSelector()
+                .className(LinearLayout.class)
+                .instance(3)));
+//madagascar should have 2 child and has madagascar text
+assertEquals(2, madagascar.getChildCount());
+assertEquals("Madagascar", madagascar.getChild(new UiSelector()
+                .className(TextView.class)).getText());</code></pre>
+            <p>As a best practice, when specifying a selector, you should use a Resource ID (if one is assigned to a UI element) instead of a text element or content-descriptor.</p>
+            <h3>Performing Actions</h3>
+            <p>With the selected UiObject, you can call the method in the UiObject class to perform user interactions on the Ui component presented by that object, such as: </p>
+            <ul>
+                <li>click() : Clicks the center of the visible bounds of the UI element.</li>
+                <li>dragTo() : Drags this object to arbitrary coordinates.</li>
+                <li>setText() : Sets the text in an editable field, after clearing the field's content. Conversely, the clear() method clears the existing text in an editable field.</li>
+                <li>swipeUp() : Performs the swipe up action on the UiObject. Similarly, the swipeDown(), swipeLeft(), and swipeRight() methods perform corresponding actions.</li>
+            </ul>
+            <pre><code>
+//swipe to the second tab
+mUiDevice.findObject(By.res("com.example.uiautomator:id/viewpager")).swipe(Direction.LEFT, 0.5f);
+//clear text
+mUiDevice.findObject(By.res("com.example.uiautomator:id/edit_name")).clear();
+//set text
+mUiDevice.findObject(By.res("com.example.uiautomator:id/edit_name")).setText("Obama");
+//click
+mUiDevice.findObject(new UiSelector().text("Greeting")).click();
+            </code></pre>
+            <p>Use the <a href="https://developer.android.com/reference/android/support/test/uiautomator/UiScrollable.html"><code>UiScrollable</code></a><span>&nbsp;</span>class to simulate vertical or horizontal scrolling across a display. This technique
+                is helpful when a UI element is positioned off-screen and you need to scroll to bring it into view.</p>
+            <pre><code>@Test
+public void testScrollListView() throws Exception {
+    UiScrollable countries = new UiScrollable(new UiSelector().resourceId("com.example.uiautomator:id/list_country"));
+    UiObject azerbaijan = countries.getChildByText(new UiSelector().className(TextView.class), "Azerbaijan");
+    assertNotNull(azerbaijan);
+}</code></pre>
+            <h3>Verifying result</h3>
+            <p>You can use standard JUnit <a href="http://junit.sourceforge.net/javadoc/org/junit/Assert.html">Assert</a> methods to test that Ui components in the app return the expected results.</p>
+            <h2>Example:</h2>
+            <h3>Use UI Automator without source code</h3>
+            <p>We'll test the application from section 12, please download APK from <a href="#">here</a> then install it to your phone or emulator.</p>
+            <p>Because we don&#39;t use project souce code, feel free to create a new project with minSDK is greater or equal to 18</p>
+            <img fsrc="img/ui-automator-example.png" />
+            <p><strong>Create a new Note</strong></p>
+            <ol>
+                <li>Inspect layout</li>
+                <img fsrc="img/ui-automator-step-1.png" />
+                <img fsrc="img/ui-automator-step-2.png" />
+                <li>Create a new test class</li>
+                <img fsrc="img/ui-automator-step-3.png" />
+                <li>Create a test method</li>
+                <pre><code>@Test
+public void testAddNote() throws Exception {
+    UiObject2 object2 = mUiDevice.findObject(By
+            .res("com.example.android.testing.notes:id/notes_list"));
+    mUiDevice.wait(Until.hasObject(By.res("com.example.android.testing.notes:id/notes_list")), WAIT_TIMEOUT);
+    //get current visible note
+    int currentNote = object2.findObjects(By.clazz(FrameLayout.class)).size();
+    //click on add note button
+    mUiDevice.findObject(By.res("com.example.android.testing.notes:id/fab_add_notes"))
+            .click();
+    //wait until add note screen is shown up
+    mUiDevice.wait(Until.hasObject(By
+                    .res("com.example.android.testing.notes:id/add_note_title"))
+            , WAIT_TIMEOUT);
+    //set title
+    mUiDevice.findObject(By.res("com.example.android.testing.notes:id/add_note_title"))
+            .setText("Go to the cinema");
+    //set description
+    mUiDevice.findObject(By.res("com.example.android.testing.notes:id/add_note_description"))
+            .setText("Your name is one of the best anime. " +
+                    "Call your girl friend, and take her to the cinema.");
+    //press back
+    mUiDevice.pressBack();
+    //save note
+    mUiDevice.findObject(By.res("com.example.android.testing.notes:id/fab_add_notes")).click();
+    //wait until a note list is shown up
+    mUiDevice.wait(Until.hasObject(By.clazz(TextView.class).text("Go to the cinema")), WAIT_TIMEOUT);
+    //the number of note should be increase by 1
+    UiCollection collection = new UiCollection(new UiSelector()
+            .resourceId("com.example.android.testing.notes:id/notes_list")
+            .childSelector(new UiSelector().className(FrameLayout.class)));
+    assertEquals(currentNote + 1, collection.getChildCount());
+}
+@Test
+public void testOpenNote() throws Exception {
+    mUiDevice.wait(Until.hasObject(By.res("com.example.android.testing.notes:id/notes_list")), WAIT_TIMEOUT);
+    UiObject firstNote = mUiDevice.findObject(new UiSelector()
+            .resourceId("com.example.android.testing.notes:id/notes_list")
+            .childSelector(new UiSelector()
+                    .className(FrameLayout.class).instance(0)));
+    String title = firstNote.getChild(new UiSelector().className(TextView.class).instance(0)).getText();
+    String description = firstNote.getChild(new UiSelector().className(TextView.class).instance(1)).getText();
+
+    firstNote.click();
+    mUiDevice.wait(Until.hasObject(By.res("com.example.android.testing.notes:id/note_detail_title")), WAIT_TIMEOUT);
+    assertEquals(title, mUiDevice.findObject(By.res("com.example.android.testing.notes:id/note_detail_title")).getText());
+    assertEquals(description, mUiDevice.findObject(By.res("com.example.android.testing.notes:id/note_detail_description")).getText());
+}
+</code></pre>
+            </ol>
+        </google-codelab-step>
+        <google-codelab-step label="Appium" duration="90">
+            <p>Appium is an open source test automation framework for use with native, hybrid and mobile web apps. It doesn't require including an SDK or recompiling app and supports multiple language.</p>
+            <p>Importantly, Appium is "cross-platform": it allows you to write tests against multiple platforms (iOS, Android, Windows), using the same API. This enables code reuse between iOS, Android, and Windows testsuites.</p>
+            <h2>Appium concepts</h2>
+            <p>Appium uses client/server architecture. Appium server receives connections from a client, listens for commands then excutes those commands on a mobile devices, and response with andd HTTP response representing the result of the command execution.</p>
+            <img fsrc="img/appium-architecture.png" alt="Appium's Architecture'" />
+            <p>Appium is a server written in Nodejs, it can be installed directly from NPM</p>
+            <pre><code>//you may want to install appium as super user
+npm install -g appium
+appium</code></pre>
+            <p>There are <a href="http://appium.io/slate/en/master/?ruby#appium-clients.md">client libraries</a> which support Appium's extensions to the WebDriver protocol.</p>
+            <h2>Install Appium</h2>
+            <p>Appium Desktop Apps provide GUI, but it's outdated, the latest update is over 1 years ago(windows) and 8 months ago(mac). If you have a problem with Appium Desktop, please install appium by using npm.</p>
+
+            <p>Desktop app: <a href="https://bitbucket.org/appium/appium.app/downloads/">download</a>.</p>
+            <p>NPM:</p>
+            <ol>
+                <li>Download and install the latest <a href="https://nodejs.org/en/">nodejs</a> and npm tools MSI (version >= 6.0). The npm and nodejs paths should be in your PATH environment variable.</li>
+                <li>Open terminal as superuser/administrator</li>
+                <li>Run the command npm install -g appium which will install Appium from NPM</li>
+                <li>To start Appium, you can now simply run <code>appium</code> from the terminal.</li>
+                <img fsrc="img/appium-start.png" />
+            </ol>
+            <h2>Android Setup</h2>
+            <p>If you don't have Android SDK, download from <a href="https://developer.android.com/studio/index.html#downloads">here</a>, and install an API level 17 or higher.</p>
+            <p>Finally, set <code>$ANDROID_HOME</code> to be your Andoid SDK path.</p>
+            <p>For example: </p>
+            <p>Linux: <code>export ANDROID_HOME=/PATH/TO/YOUR/ANDROID/SDK</code></p>
+            <p>Windows: <code>SETX /M ANDROID_HOME "/PATH/TO/YOUR/ANDROID/SDK"</code></p>
+            <h2>Create your first test use java</h2>
+            <p>Your first test will be note app. Download it from <a href="#">here</a>.</p>
+            <p>Feel free to use your favorite IDE and language, but the instruction will use java and <a href="https://www.jetbrains.com/idea/">Intellij</a></p>
+            <img fsrc="img/create-maven.jpg" />
+            <ol>
+                <li>Open Intellij and Create New project.</li>
+                <li>Select Maven and press <i>Next</i>.</li>
+                <li>Fill out <i>GroupId</i>, <i>ArtifactId</i> and <i>Version.</i></li>
+                <li>Fill out <i>project name</i> and <i>project location</i> then press <i>Finish</i>.</li>
+                <li>Add the following dependency to <code>pom.xml</code></li>
+                <pre><code>
+//change 5.0.0-BETA1 to the latest version
+&lt;dependency&gt;
+    &lt;groupId&gt;io.appium&lt;/groupId&gt;
+    &lt;artifactId&gt;java-client&lt;/artifactId&gt;
+    &lt;version&gt;5.0.0-BETA1&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+                <li>Copy the apk file to src/main/resources</li>
+                <li>Create your first test under src/test/java</li>
+                <p>The minimal setup is: </p>
+                <pre><code>public class AddNoteTest {
+    private AndroidDriver driver;
+    private File noteApk = new File("src/main/resources/note-app-debug.apk");
+
+    @Before
+    public void setUp() throws Exception {
+        //declare device's capabilities
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        //device name
+        capabilities.setCapability(MobileCapabilityType.DEVICE_NAME, "Android Emulator");
+        //path to your apk
+        capabilities.setCapability(MobileCapabilityType.APP, noteApk.getAbsolutePath());
+        //platform name
+        capabilities.setCapability(MobileCapabilityType.PLATFORM_NAME, MobilePlatform.ANDROID);
+        //initialize driver with url and capabilities, if you don't change parameter, default ip is 127.0.0.01
+        //and the default host is 4723
+        driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+    }
+    @After
+    public void tearDown() throws Exception {
+        driver.quit();
+
+    }
+}</code></pre>
+                <li>Use UI Automator to locate element</li>
+                <li>Write test method</li>
+                <p>Similar to UIAutomator, we find element then perform action, and verify result by using assert or similar libaries. </p>
+                <pre><code>
+@Test
+public void testAddNote() throws Exception {
+    //initialize a wait instance
+    WebDriverWait wait = new WebDriverWait(driver, 10);
+    //wait until notes_list is presented
+    wait.until(ExpectedConditions
+            .numberOfElementsToBeMoreThan(By
+                    .xpath("//android.support.v7.widget.RecyclerView/android.widget.FrameLayout"), 0));
+    //count the number of notes
+    int currentNumOfNote = driver.findElement(By.id("notes_list"))
+             .findElements(By.className("android.widget.FrameLayout"))
+            .size();
+    //find add note button and click
+    driver.findElement(By.id("fab_add_notes")).click();
+    //wait until add_note_tile is visible
+    wait.until(ExpectedConditions.presenceOfElementLocated(By.id("add_note_title")));
+    //set note title
+    driver.findElement(By.id("add_note_title")).sendKeys("Buy Final Fantasy XV");
+    //note description
+    driver.findElement(By.id("add_note_description")).sendKeys("Blah blah");
+    //save
+    driver.findElement(By.id("fab_add_notes")).click();
+    //wait until the element contains 'Final Fantasy XV' is visible
+    wait.until(ExpectedConditions
+            .presenceOfElementLocated(By.xpath("//android.widget.TextView[contains(@text, 'Final Fantasy XV')]")));
+    //count the number of notes
+    int newNumOfNote = driver.findElement(By.id("notes_list"))
+            .findElements(By.className("android.widget.FrameLayout"))
+            .size();
+    assertEquals(currentNumOfNote+1, newNumOfNote);
+}</code></pre>
+            </ol>
+            <p><a href="http://appium.io/slate/en/master/?java#the-default-capabilities-flag">DesiredCapabilities</a> describe a series of key/value pairs that encapsulate aspects of a testing enviroment we want to test</p>
+            <p><a href="https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/WebElement.html">WebElement</a> is a general interface which comes from Selenium, it represents an html element.</p>
+            <p><a href="http://appium.github.io/java-client/io/appium/java_client/AppiumDriver.html">AppiumDriver</a> contains all methods shared between iOS and Android. <a href="http://appium.github.io/java-client/io/appium/java_client/android/AndroidDriver.html">AndroidDriver</a>                extends AppiumDriver and provides more methods and android's specific implementations.</p>
+            <p><a href="https://seleniumhq.github.io/selenium/docs/api/java/org/openqa/selenium/support/ui/WebDriverWait.html">WebDriverWait</a> is an specialization of FluentWait. It will wait under specific condition.</p>
+        </google-codelab-step>
     </google-codelab>
 
-    <script>
-        (function(i, s, o, g, r, a, m) {
-            i['GoogleAnalyticsObject'] = r;
-            i[r] = i[r] || function() {
-                (i[r].q = i[r].q || []).push(arguments)
-            }, i[r].l = 1 * new Date();
-            a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0];
-            a.async = 1;
-            a.src = g;
-            m.parentNode.insertBefore(a, m)
-        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-        ga('create', 'UA-49880327-14', 'auto');
-
-        (function() {
-            var gaCodelab = '';
-            if (gaCodelab) {
-                ga('create', gaCodelab, 'auto', {
-                    name: 'codelab'
-                });
-            }
-
-            var gaView;
-            var parts = location.search.substring(1).split('&');
-            for (var i = 0; i < parts.length; i++) {
-                var param = parts[i].split('=');
-                if (param[0] === 'viewga') {
-                    gaView = param[1];
-                    break;
-                }
-            }
-            if (gaView && gaView !== gaCodelab) {
-                ga('create', gaView, 'auto', {
-                    name: 'view'
-                });
-            }
-        })();
-    </script>
-
+    <script src="bower_components/lightbox/lightbox.min.js "></script>
 </body>
 
 </html>

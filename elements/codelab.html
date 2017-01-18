@@ -1,5 +1,8 @@
+<html>
 
-<html><head><script src="codelab.js" defer=""></script><!--
+<head>
+    <script src="codelab.js" defer=""></script>
+    <!--
 @license
 Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -7,7 +10,8 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><!--
+-->
+    <!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -15,10 +19,16 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
---><meta charset="UTF-8"></head><body><div hidden="" by-vulcanize=""><dom-module id="iron-localstorage" assetpath="../bower_components/iron-localstorage/"></dom-module>
-<dom-module id="paper-ripple" assetpath="../bower_components/paper-ripple/">
+-->
+    <meta charset="UTF-8">
+</head>
 
-  <template>
+<body>
+    <div hidden="" by-vulcanize="">
+        <dom-module id="iron-localstorage" assetpath="../bower_components/iron-localstorage/"></dom-module>
+        <dom-module id="paper-ripple" assetpath="../bower_components/paper-ripple/">
+
+            <template>
     <style>
       :host {
         display: block;
@@ -89,744 +99,704 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div id="background"></div>
     <div id="waves"></div>
   </template>
-</dom-module>
-<style is="custom-style">
-
-  :root {
-
-    /* Material Design color palette for Google products */
-
-    --google-red-100: #f4c7c3;
-    --google-red-300: #e67c73;
-    --google-red-500: #db4437;
-    --google-red-700: #c53929;
-
-    --google-blue-100: #c6dafc;
-    --google-blue-300: #7baaf7;
-    --google-blue-500: #4285f4;
-    --google-blue-700: #3367d6;
-
-    --google-green-100: #b7e1cd;
-    --google-green-300: #57bb8a;
-    --google-green-500: #0f9d58;
-    --google-green-700: #0b8043;
-
-    --google-yellow-100: #fce8b2;
-    --google-yellow-300: #f7cb4d;
-    --google-yellow-500: #f4b400;
-    --google-yellow-700: #f09300;
-
-    --google-grey-100: #f5f5f5;
-    --google-grey-300: #e0e0e0;
-    --google-grey-500: #9e9e9e;
-    --google-grey-700: #616161;
-    
-    /* Material Design color palette from online spec document */
-
-    --paper-red-50: #ffebee;
-    --paper-red-100: #ffcdd2;
-    --paper-red-200: #ef9a9a;
-    --paper-red-300: #e57373;
-    --paper-red-400: #ef5350;
-    --paper-red-500: #f44336;
-    --paper-red-600: #e53935;
-    --paper-red-700: #d32f2f;
-    --paper-red-800: #c62828;
-    --paper-red-900: #b71c1c;
-    --paper-red-a100: #ff8a80;
-    --paper-red-a200: #ff5252;
-    --paper-red-a400: #ff1744;
-    --paper-red-a700: #d50000;
- 
-    --paper-pink-50: #fce4ec;
-    --paper-pink-100: #f8bbd0;
-    --paper-pink-200: #f48fb1;
-    --paper-pink-300: #f06292;
-    --paper-pink-400: #ec407a;
-    --paper-pink-500: #e91e63;
-    --paper-pink-600: #d81b60;
-    --paper-pink-700: #c2185b;
-    --paper-pink-800: #ad1457;
-    --paper-pink-900: #880e4f;
-    --paper-pink-a100: #ff80ab;
-    --paper-pink-a200: #ff4081;
-    --paper-pink-a400: #f50057;
-    --paper-pink-a700: #c51162;
- 
-    --paper-purple-50: #f3e5f5;
-    --paper-purple-100: #e1bee7;
-    --paper-purple-200: #ce93d8;
-    --paper-purple-300: #ba68c8;
-    --paper-purple-400: #ab47bc;
-    --paper-purple-500: #9c27b0;
-    --paper-purple-600: #8e24aa;
-    --paper-purple-700: #7b1fa2;
-    --paper-purple-800: #6a1b9a;
-    --paper-purple-900: #4a148c;
-    --paper-purple-a100: #ea80fc;
-    --paper-purple-a200: #e040fb;
-    --paper-purple-a400: #d500f9;
-    --paper-purple-a700: #aa00ff;
- 
-    --paper-deep-purple-50: #ede7f6;
-    --paper-deep-purple-100: #d1c4e9;
-    --paper-deep-purple-200: #b39ddb;
-    --paper-deep-purple-300: #9575cd;
-    --paper-deep-purple-400: #7e57c2;
-    --paper-deep-purple-500: #673ab7;
-    --paper-deep-purple-600: #5e35b1;
-    --paper-deep-purple-700: #512da8;
-    --paper-deep-purple-800: #4527a0;
-    --paper-deep-purple-900: #311b92;
-    --paper-deep-purple-a100: #b388ff;
-    --paper-deep-purple-a200: #7c4dff;
-    --paper-deep-purple-a400: #651fff;
-    --paper-deep-purple-a700: #6200ea;
- 
-    --paper-indigo-50: #e8eaf6;
-    --paper-indigo-100: #c5cae9;
-    --paper-indigo-200: #9fa8da;
-    --paper-indigo-300: #7986cb;
-    --paper-indigo-400: #5c6bc0;
-    --paper-indigo-500: #3f51b5;
-    --paper-indigo-600: #3949ab;
-    --paper-indigo-700: #303f9f;
-    --paper-indigo-800: #283593;
-    --paper-indigo-900: #1a237e;
-    --paper-indigo-a100: #8c9eff;
-    --paper-indigo-a200: #536dfe;
-    --paper-indigo-a400: #3d5afe;
-    --paper-indigo-a700: #304ffe;
- 
-    --paper-blue-50: #e3f2fd;
-    --paper-blue-100: #bbdefb;
-    --paper-blue-200: #90caf9;
-    --paper-blue-300: #64b5f6;
-    --paper-blue-400: #42a5f5;
-    --paper-blue-500: #2196f3;
-    --paper-blue-600: #1e88e5;
-    --paper-blue-700: #1976d2;
-    --paper-blue-800: #1565c0;
-    --paper-blue-900: #0d47a1;
-    --paper-blue-a100: #82b1ff;
-    --paper-blue-a200: #448aff;
-    --paper-blue-a400: #2979ff;
-    --paper-blue-a700: #2962ff;
- 
-    --paper-light-blue-50: #e1f5fe;
-    --paper-light-blue-100: #b3e5fc;
-    --paper-light-blue-200: #81d4fa;
-    --paper-light-blue-300: #4fc3f7;
-    --paper-light-blue-400: #29b6f6;
-    --paper-light-blue-500: #03a9f4;
-    --paper-light-blue-600: #039be5;
-    --paper-light-blue-700: #0288d1;
-    --paper-light-blue-800: #0277bd;
-    --paper-light-blue-900: #01579b;
-    --paper-light-blue-a100: #80d8ff;
-    --paper-light-blue-a200: #40c4ff;
-    --paper-light-blue-a400: #00b0ff;
-    --paper-light-blue-a700: #0091ea;
- 
-    --paper-cyan-50: #e0f7fa;
-    --paper-cyan-100: #b2ebf2;
-    --paper-cyan-200: #80deea;
-    --paper-cyan-300: #4dd0e1;
-    --paper-cyan-400: #26c6da;
-    --paper-cyan-500: #00bcd4;
-    --paper-cyan-600: #00acc1;
-    --paper-cyan-700: #0097a7;
-    --paper-cyan-800: #00838f;
-    --paper-cyan-900: #006064;
-    --paper-cyan-a100: #84ffff;
-    --paper-cyan-a200: #18ffff;
-    --paper-cyan-a400: #00e5ff;
-    --paper-cyan-a700: #00b8d4;
- 
-    --paper-teal-50: #e0f2f1;
-    --paper-teal-100: #b2dfdb;
-    --paper-teal-200: #80cbc4;
-    --paper-teal-300: #4db6ac;
-    --paper-teal-400: #26a69a;
-    --paper-teal-500: #009688;
-    --paper-teal-600: #00897b;
-    --paper-teal-700: #00796b;
-    --paper-teal-800: #00695c;
-    --paper-teal-900: #004d40;
-    --paper-teal-a100: #a7ffeb;
-    --paper-teal-a200: #64ffda;
-    --paper-teal-a400: #1de9b6;
-    --paper-teal-a700: #00bfa5;
- 
-    --paper-green-50: #e8f5e9;
-    --paper-green-100: #c8e6c9;
-    --paper-green-200: #a5d6a7;
-    --paper-green-300: #81c784;
-    --paper-green-400: #66bb6a;
-    --paper-green-500: #4caf50;
-    --paper-green-600: #43a047;
-    --paper-green-700: #388e3c;
-    --paper-green-800: #2e7d32;
-    --paper-green-900: #1b5e20;
-    --paper-green-a100: #b9f6ca;
-    --paper-green-a200: #69f0ae;
-    --paper-green-a400: #00e676;
-    --paper-green-a700: #00c853;
- 
-    --paper-light-green-50: #f1f8e9;
-    --paper-light-green-100: #dcedc8;
-    --paper-light-green-200: #c5e1a5;
-    --paper-light-green-300: #aed581;
-    --paper-light-green-400: #9ccc65;
-    --paper-light-green-500: #8bc34a;
-    --paper-light-green-600: #7cb342;
-    --paper-light-green-700: #689f38;
-    --paper-light-green-800: #558b2f;
-    --paper-light-green-900: #33691e;
-    --paper-light-green-a100: #ccff90;
-    --paper-light-green-a200: #b2ff59;
-    --paper-light-green-a400: #76ff03;
-    --paper-light-green-a700: #64dd17;
- 
-    --paper-lime-50: #f9fbe7;
-    --paper-lime-100: #f0f4c3;
-    --paper-lime-200: #e6ee9c;
-    --paper-lime-300: #dce775;
-    --paper-lime-400: #d4e157;
-    --paper-lime-500: #cddc39;
-    --paper-lime-600: #c0ca33;
-    --paper-lime-700: #afb42b;
-    --paper-lime-800: #9e9d24;
-    --paper-lime-900: #827717;
-    --paper-lime-a100: #f4ff81;
-    --paper-lime-a200: #eeff41;
-    --paper-lime-a400: #c6ff00;
-    --paper-lime-a700: #aeea00;
- 
-    --paper-yellow-50: #fffde7;
-    --paper-yellow-100: #fff9c4;
-    --paper-yellow-200: #fff59d;
-    --paper-yellow-300: #fff176;
-    --paper-yellow-400: #ffee58;
-    --paper-yellow-500: #ffeb3b;
-    --paper-yellow-600: #fdd835;
-    --paper-yellow-700: #fbc02d;
-    --paper-yellow-800: #f9a825;
-    --paper-yellow-900: #f57f17;
-    --paper-yellow-a100: #ffff8d;
-    --paper-yellow-a200: #ffff00;
-    --paper-yellow-a400: #ffea00;
-    --paper-yellow-a700: #ffd600;
- 
-    --paper-amber-50: #fff8e1;
-    --paper-amber-100: #ffecb3;
-    --paper-amber-200: #ffe082;
-    --paper-amber-300: #ffd54f;
-    --paper-amber-400: #ffca28;
-    --paper-amber-500: #ffc107;
-    --paper-amber-600: #ffb300;
-    --paper-amber-700: #ffa000;
-    --paper-amber-800: #ff8f00;
-    --paper-amber-900: #ff6f00;
-    --paper-amber-a100: #ffe57f;
-    --paper-amber-a200: #ffd740;
-    --paper-amber-a400: #ffc400;
-    --paper-amber-a700: #ffab00;
- 
-    --paper-orange-50: #fff3e0;
-    --paper-orange-100: #ffe0b2;
-    --paper-orange-200: #ffcc80;
-    --paper-orange-300: #ffb74d;
-    --paper-orange-400: #ffa726;
-    --paper-orange-500: #ff9800;
-    --paper-orange-600: #fb8c00;
-    --paper-orange-700: #f57c00;
-    --paper-orange-800: #ef6c00;
-    --paper-orange-900: #e65100;
-    --paper-orange-a100: #ffd180;
-    --paper-orange-a200: #ffab40;
-    --paper-orange-a400: #ff9100;
-    --paper-orange-a700: #ff6500;
- 
-    --paper-deep-orange-50: #fbe9e7;
-    --paper-deep-orange-100: #ffccbc;
-    --paper-deep-orange-200: #ffab91;
-    --paper-deep-orange-300: #ff8a65;
-    --paper-deep-orange-400: #ff7043;
-    --paper-deep-orange-500: #ff5722;
-    --paper-deep-orange-600: #f4511e;
-    --paper-deep-orange-700: #e64a19;
-    --paper-deep-orange-800: #d84315;
-    --paper-deep-orange-900: #bf360c;
-    --paper-deep-orange-a100: #ff9e80;
-    --paper-deep-orange-a200: #ff6e40;
-    --paper-deep-orange-a400: #ff3d00;
-    --paper-deep-orange-a700: #dd2c00;
- 
-    --paper-brown-50: #efebe9;
-    --paper-brown-100: #d7ccc8;
-    --paper-brown-200: #bcaaa4;
-    --paper-brown-300: #a1887f;
-    --paper-brown-400: #8d6e63;
-    --paper-brown-500: #795548;
-    --paper-brown-600: #6d4c41;
-    --paper-brown-700: #5d4037;
-    --paper-brown-800: #4e342e;
-    --paper-brown-900: #3e2723;
- 
-    --paper-grey-50: #fafafa;
-    --paper-grey-100: #f5f5f5;
-    --paper-grey-200: #eeeeee;
-    --paper-grey-300: #e0e0e0;
-    --paper-grey-400: #bdbdbd;
-    --paper-grey-500: #9e9e9e;
-    --paper-grey-600: #757575;
-    --paper-grey-700: #616161;
-    --paper-grey-800: #424242;
-    --paper-grey-900: #212121;
- 
-    --paper-blue-grey-50: #eceff1;
-    --paper-blue-grey-100: #cfd8dc;
-    --paper-blue-grey-200: #b0bec5;
-    --paper-blue-grey-300: #90a4ae;
-    --paper-blue-grey-400: #78909c;
-    --paper-blue-grey-500: #607d8b;
-    --paper-blue-grey-600: #546e7a;
-    --paper-blue-grey-700: #455a64;
-    --paper-blue-grey-800: #37474f;
-    --paper-blue-grey-900: #263238;
-
-    /* opacity for dark text on a light background */
-    --dark-divider-opacity: 0.12;
-    --dark-disabled-opacity: 0.38; /* or hint text or icon */
-    --dark-secondary-opacity: 0.54;
-    --dark-primary-opacity: 0.87;
-
-    /* opacity for light text on a dark background */
-    --light-divider-opacity: 0.12;
-    --light-disabled-opacity: 0.3; /* or hint text or icon */
-    --light-secondary-opacity: 0.7;
-    --light-primary-opacity: 1.0;
-
-  }
-
-</style>
+        </dom-module>
+        <style is="custom-style">
+             :root {
+                /* Material Design color palette for Google products */
+                --google-red-100: #f4c7c3;
+                --google-red-300: #e67c73;
+                --google-red-500: #db4437;
+                --google-red-700: #c53929;
+                --google-blue-100: #c6dafc;
+                --google-blue-300: #7baaf7;
+                --google-blue-500: #4285f4;
+                --google-blue-700: #3367d6;
+                --google-green-100: #b7e1cd;
+                --google-green-300: #57bb8a;
+                --google-green-500: #0f9d58;
+                --google-green-700: #0b8043;
+                --google-yellow-100: #fce8b2;
+                --google-yellow-300: #f7cb4d;
+                --google-yellow-500: #f4b400;
+                --google-yellow-700: #f09300;
+                --google-grey-100: #f5f5f5;
+                --google-grey-300: #e0e0e0;
+                --google-grey-500: #9e9e9e;
+                --google-grey-700: #616161;
+                /* Material Design color palette from online spec document */
+                --paper-red-50: #ffebee;
+                --paper-red-100: #ffcdd2;
+                --paper-red-200: #ef9a9a;
+                --paper-red-300: #e57373;
+                --paper-red-400: #ef5350;
+                --paper-red-500: #f44336;
+                --paper-red-600: #e53935;
+                --paper-red-700: #d32f2f;
+                --paper-red-800: #c62828;
+                --paper-red-900: #b71c1c;
+                --paper-red-a100: #ff8a80;
+                --paper-red-a200: #ff5252;
+                --paper-red-a400: #ff1744;
+                --paper-red-a700: #d50000;
+                --paper-pink-50: #fce4ec;
+                --paper-pink-100: #f8bbd0;
+                --paper-pink-200: #f48fb1;
+                --paper-pink-300: #f06292;
+                --paper-pink-400: #ec407a;
+                --paper-pink-500: #e91e63;
+                --paper-pink-600: #d81b60;
+                --paper-pink-700: #c2185b;
+                --paper-pink-800: #ad1457;
+                --paper-pink-900: #880e4f;
+                --paper-pink-a100: #ff80ab;
+                --paper-pink-a200: #ff4081;
+                --paper-pink-a400: #f50057;
+                --paper-pink-a700: #c51162;
+                --paper-purple-50: #f3e5f5;
+                --paper-purple-100: #e1bee7;
+                --paper-purple-200: #ce93d8;
+                --paper-purple-300: #ba68c8;
+                --paper-purple-400: #ab47bc;
+                --paper-purple-500: #9c27b0;
+                --paper-purple-600: #8e24aa;
+                --paper-purple-700: #7b1fa2;
+                --paper-purple-800: #6a1b9a;
+                --paper-purple-900: #4a148c;
+                --paper-purple-a100: #ea80fc;
+                --paper-purple-a200: #e040fb;
+                --paper-purple-a400: #d500f9;
+                --paper-purple-a700: #aa00ff;
+                --paper-deep-purple-50: #ede7f6;
+                --paper-deep-purple-100: #d1c4e9;
+                --paper-deep-purple-200: #b39ddb;
+                --paper-deep-purple-300: #9575cd;
+                --paper-deep-purple-400: #7e57c2;
+                --paper-deep-purple-500: #673ab7;
+                --paper-deep-purple-600: #5e35b1;
+                --paper-deep-purple-700: #512da8;
+                --paper-deep-purple-800: #4527a0;
+                --paper-deep-purple-900: #311b92;
+                --paper-deep-purple-a100: #b388ff;
+                --paper-deep-purple-a200: #7c4dff;
+                --paper-deep-purple-a400: #651fff;
+                --paper-deep-purple-a700: #6200ea;
+                --paper-indigo-50: #e8eaf6;
+                --paper-indigo-100: #c5cae9;
+                --paper-indigo-200: #9fa8da;
+                --paper-indigo-300: #7986cb;
+                --paper-indigo-400: #5c6bc0;
+                --paper-indigo-500: #3f51b5;
+                --paper-indigo-600: #3949ab;
+                --paper-indigo-700: #303f9f;
+                --paper-indigo-800: #283593;
+                --paper-indigo-900: #1a237e;
+                --paper-indigo-a100: #8c9eff;
+                --paper-indigo-a200: #536dfe;
+                --paper-indigo-a400: #3d5afe;
+                --paper-indigo-a700: #304ffe;
+                --paper-blue-50: #e3f2fd;
+                --paper-blue-100: #bbdefb;
+                --paper-blue-200: #90caf9;
+                --paper-blue-300: #64b5f6;
+                --paper-blue-400: #42a5f5;
+                --paper-blue-500: #2196f3;
+                --paper-blue-600: #1e88e5;
+                --paper-blue-700: #1976d2;
+                --paper-blue-800: #1565c0;
+                --paper-blue-900: #0d47a1;
+                --paper-blue-a100: #82b1ff;
+                --paper-blue-a200: #448aff;
+                --paper-blue-a400: #2979ff;
+                --paper-blue-a700: #2962ff;
+                --paper-light-blue-50: #e1f5fe;
+                --paper-light-blue-100: #b3e5fc;
+                --paper-light-blue-200: #81d4fa;
+                --paper-light-blue-300: #4fc3f7;
+                --paper-light-blue-400: #29b6f6;
+                --paper-light-blue-500: #03a9f4;
+                --paper-light-blue-600: #039be5;
+                --paper-light-blue-700: #0288d1;
+                --paper-light-blue-800: #0277bd;
+                --paper-light-blue-900: #01579b;
+                --paper-light-blue-a100: #80d8ff;
+                --paper-light-blue-a200: #40c4ff;
+                --paper-light-blue-a400: #00b0ff;
+                --paper-light-blue-a700: #0091ea;
+                --paper-cyan-50: #e0f7fa;
+                --paper-cyan-100: #b2ebf2;
+                --paper-cyan-200: #80deea;
+                --paper-cyan-300: #4dd0e1;
+                --paper-cyan-400: #26c6da;
+                --paper-cyan-500: #00bcd4;
+                --paper-cyan-600: #00acc1;
+                --paper-cyan-700: #0097a7;
+                --paper-cyan-800: #00838f;
+                --paper-cyan-900: #006064;
+                --paper-cyan-a100: #84ffff;
+                --paper-cyan-a200: #18ffff;
+                --paper-cyan-a400: #00e5ff;
+                --paper-cyan-a700: #00b8d4;
+                --paper-teal-50: #e0f2f1;
+                --paper-teal-100: #b2dfdb;
+                --paper-teal-200: #80cbc4;
+                --paper-teal-300: #4db6ac;
+                --paper-teal-400: #26a69a;
+                --paper-teal-500: #009688;
+                --paper-teal-600: #00897b;
+                --paper-teal-700: #00796b;
+                --paper-teal-800: #00695c;
+                --paper-teal-900: #004d40;
+                --paper-teal-a100: #a7ffeb;
+                --paper-teal-a200: #64ffda;
+                --paper-teal-a400: #1de9b6;
+                --paper-teal-a700: #00bfa5;
+                --paper-green-50: #e8f5e9;
+                --paper-green-100: #c8e6c9;
+                --paper-green-200: #a5d6a7;
+                --paper-green-300: #81c784;
+                --paper-green-400: #66bb6a;
+                --paper-green-500: #4caf50;
+                --paper-green-600: #43a047;
+                --paper-green-700: #388e3c;
+                --paper-green-800: #2e7d32;
+                --paper-green-900: #1b5e20;
+                --paper-green-a100: #b9f6ca;
+                --paper-green-a200: #69f0ae;
+                --paper-green-a400: #00e676;
+                --paper-green-a700: #00c853;
+                --paper-light-green-50: #f1f8e9;
+                --paper-light-green-100: #dcedc8;
+                --paper-light-green-200: #c5e1a5;
+                --paper-light-green-300: #aed581;
+                --paper-light-green-400: #9ccc65;
+                --paper-light-green-500: #8bc34a;
+                --paper-light-green-600: #7cb342;
+                --paper-light-green-700: #689f38;
+                --paper-light-green-800: #558b2f;
+                --paper-light-green-900: #33691e;
+                --paper-light-green-a100: #ccff90;
+                --paper-light-green-a200: #b2ff59;
+                --paper-light-green-a400: #76ff03;
+                --paper-light-green-a700: #64dd17;
+                --paper-lime-50: #f9fbe7;
+                --paper-lime-100: #f0f4c3;
+                --paper-lime-200: #e6ee9c;
+                --paper-lime-300: #dce775;
+                --paper-lime-400: #d4e157;
+                --paper-lime-500: #cddc39;
+                --paper-lime-600: #c0ca33;
+                --paper-lime-700: #afb42b;
+                --paper-lime-800: #9e9d24;
+                --paper-lime-900: #827717;
+                --paper-lime-a100: #f4ff81;
+                --paper-lime-a200: #eeff41;
+                --paper-lime-a400: #c6ff00;
+                --paper-lime-a700: #aeea00;
+                --paper-yellow-50: #fffde7;
+                --paper-yellow-100: #fff9c4;
+                --paper-yellow-200: #fff59d;
+                --paper-yellow-300: #fff176;
+                --paper-yellow-400: #ffee58;
+                --paper-yellow-500: #ffeb3b;
+                --paper-yellow-600: #fdd835;
+                --paper-yellow-700: #fbc02d;
+                --paper-yellow-800: #f9a825;
+                --paper-yellow-900: #f57f17;
+                --paper-yellow-a100: #ffff8d;
+                --paper-yellow-a200: #ffff00;
+                --paper-yellow-a400: #ffea00;
+                --paper-yellow-a700: #ffd600;
+                --paper-amber-50: #fff8e1;
+                --paper-amber-100: #ffecb3;
+                --paper-amber-200: #ffe082;
+                --paper-amber-300: #ffd54f;
+                --paper-amber-400: #ffca28;
+                --paper-amber-500: #ffc107;
+                --paper-amber-600: #ffb300;
+                --paper-amber-700: #ffa000;
+                --paper-amber-800: #ff8f00;
+                --paper-amber-900: #ff6f00;
+                --paper-amber-a100: #ffe57f;
+                --paper-amber-a200: #ffd740;
+                --paper-amber-a400: #ffc400;
+                --paper-amber-a700: #ffab00;
+                --paper-orange-50: #fff3e0;
+                --paper-orange-100: #ffe0b2;
+                --paper-orange-200: #ffcc80;
+                --paper-orange-300: #ffb74d;
+                --paper-orange-400: #ffa726;
+                --paper-orange-500: #ff9800;
+                --paper-orange-600: #fb8c00;
+                --paper-orange-700: #f57c00;
+                --paper-orange-800: #ef6c00;
+                --paper-orange-900: #e65100;
+                --paper-orange-a100: #ffd180;
+                --paper-orange-a200: #ffab40;
+                --paper-orange-a400: #ff9100;
+                --paper-orange-a700: #ff6500;
+                --paper-deep-orange-50: #fbe9e7;
+                --paper-deep-orange-100: #ffccbc;
+                --paper-deep-orange-200: #ffab91;
+                --paper-deep-orange-300: #ff8a65;
+                --paper-deep-orange-400: #ff7043;
+                --paper-deep-orange-500: #ff5722;
+                --paper-deep-orange-600: #f4511e;
+                --paper-deep-orange-700: #e64a19;
+                --paper-deep-orange-800: #d84315;
+                --paper-deep-orange-900: #bf360c;
+                --paper-deep-orange-a100: #ff9e80;
+                --paper-deep-orange-a200: #ff6e40;
+                --paper-deep-orange-a400: #ff3d00;
+                --paper-deep-orange-a700: #dd2c00;
+                --paper-brown-50: #efebe9;
+                --paper-brown-100: #d7ccc8;
+                --paper-brown-200: #bcaaa4;
+                --paper-brown-300: #a1887f;
+                --paper-brown-400: #8d6e63;
+                --paper-brown-500: #795548;
+                --paper-brown-600: #6d4c41;
+                --paper-brown-700: #5d4037;
+                --paper-brown-800: #4e342e;
+                --paper-brown-900: #3e2723;
+                --paper-grey-50: #fafafa;
+                --paper-grey-100: #f5f5f5;
+                --paper-grey-200: #eeeeee;
+                --paper-grey-300: #e0e0e0;
+                --paper-grey-400: #bdbdbd;
+                --paper-grey-500: #9e9e9e;
+                --paper-grey-600: #757575;
+                --paper-grey-700: #616161;
+                --paper-grey-800: #424242;
+                --paper-grey-900: #212121;
+                --paper-blue-grey-50: #eceff1;
+                --paper-blue-grey-100: #cfd8dc;
+                --paper-blue-grey-200: #b0bec5;
+                --paper-blue-grey-300: #90a4ae;
+                --paper-blue-grey-400: #78909c;
+                --paper-blue-grey-500: #607d8b;
+                --paper-blue-grey-600: #546e7a;
+                --paper-blue-grey-700: #455a64;
+                --paper-blue-grey-800: #37474f;
+                --paper-blue-grey-900: #263238;
+                /* opacity for dark text on a light background */
+                --dark-divider-opacity: 0.12;
+                --dark-disabled-opacity: 0.38;
+                /* or hint text or icon */
+                --dark-secondary-opacity: 0.54;
+                --dark-primary-opacity: 0.87;
+                /* opacity for light text on a dark background */
+                --light-divider-opacity: 0.12;
+                --light-disabled-opacity: 0.3;
+                /* or hint text or icon */
+                --light-secondary-opacity: 0.7;
+                --light-primary-opacity: 1.0;
+            }
+        </style>
 
 
-<style is="custom-style">
-
-  :root {
-    /*
+        <style is="custom-style">
+             :root {
+                /*
      * You can use these generic variables in your elements for easy theming.
      * For example, if all your elements use `--primary-text-color` as its main
      * color, then switching from a light to a dark theme is just a matter of
      * changing the value of `--primary-text-color` in your application.
      */
-    --primary-text-color: var(--light-theme-text-color);
-    --primary-background-color: var(--light-theme-background-color);
-    --secondary-text-color: var(--light-theme-secondary-color);
-    --disabled-text-color: var(--light-theme-disabled-color);
-    --divider-color: var(--light-theme-divider-color);
-    --error-color: var(--paper-deep-orange-a700);
-
-    /*
+                --primary-text-color: var(--light-theme-text-color);
+                --primary-background-color: var(--light-theme-background-color);
+                --secondary-text-color: var(--light-theme-secondary-color);
+                --disabled-text-color: var(--light-theme-disabled-color);
+                --divider-color: var(--light-theme-divider-color);
+                --error-color: var(--paper-deep-orange-a700);
+                /*
      * Primary and accent colors. Also see color.html for more colors.
      */
-    --primary-color: var(--paper-indigo-500);
-    --light-primary-color: var(--paper-indigo-100);
-    --dark-primary-color: var(--paper-indigo-700);
-
-    --accent-color: var(--paper-pink-a200);
-    --light-accent-color: var(--paper-pink-a100);
-    --dark-accent-color: var(--paper-pink-a400);
-
-
-    /*
+                --primary-color: var(--paper-indigo-500);
+                --light-primary-color: var(--paper-indigo-100);
+                --dark-primary-color: var(--paper-indigo-700);
+                --accent-color: var(--paper-pink-a200);
+                --light-accent-color: var(--paper-pink-a100);
+                --dark-accent-color: var(--paper-pink-a400);
+                /*
      * Material Design Light background theme
      */
-    --light-theme-background-color: #ffffff;
-    --light-theme-base-color: #000000;
-    --light-theme-text-color: var(--paper-grey-900);
-    --light-theme-secondary-color: #737373;  /* for secondary text and icons */
-    --light-theme-disabled-color: #9b9b9b;  /* disabled/hint text */
-    --light-theme-divider-color: #dbdbdb;
-
-    /*
+                --light-theme-background-color: #ffffff;
+                --light-theme-base-color: #000000;
+                --light-theme-text-color: var(--paper-grey-900);
+                --light-theme-secondary-color: #737373;
+                /* for secondary text and icons */
+                --light-theme-disabled-color: #9b9b9b;
+                /* disabled/hint text */
+                --light-theme-divider-color: #dbdbdb;
+                /*
      * Material Design Dark background theme
      */
-    --dark-theme-background-color: var(--paper-grey-900);
-    --dark-theme-base-color: #ffffff;
-    --dark-theme-text-color: #ffffff;
-    --dark-theme-secondary-color: #bcbcbc;  /* for secondary text and icons */
-    --dark-theme-disabled-color: #646464;  /* disabled/hint text */
-    --dark-theme-divider-color: #3c3c3c;
-
-    /*
+                --dark-theme-background-color: var(--paper-grey-900);
+                --dark-theme-base-color: #ffffff;
+                --dark-theme-text-color: #ffffff;
+                --dark-theme-secondary-color: #bcbcbc;
+                /* for secondary text and icons */
+                --dark-theme-disabled-color: #646464;
+                /* disabled/hint text */
+                --dark-theme-divider-color: #3c3c3c;
+                /*
      * Deprecated values because of their confusing names.
      */
-    --text-primary-color: var(--dark-theme-text-color);
-    --default-primary-color: var(--primary-color);
-
-  }
-
-</style>
+                --text-primary-color: var(--dark-theme-text-color);
+                --default-primary-color: var(--primary-color);
+            }
+        </style>
 
 
-<style>
-  /* IE 10 support for HTML5 hidden attr */
-  [hidden] {
-    display: none !important;
-  }
-</style>
+        <style>
+            /* IE 10 support for HTML5 hidden attr */
+            
+            [hidden] {
+                display: none !important;
+            }
+        </style>
 
-<style is="custom-style">
-  :root {
-
-    --layout: {
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-    };
-
-    --layout-inline: {
-      display: -ms-inline-flexbox;
-      display: -webkit-inline-flex;
-      display: inline-flex;
-    };
-
-    --layout-horizontal: {
-      @apply(--layout);
-
-      -ms-flex-direction: row;
-      -webkit-flex-direction: row;
-      flex-direction: row;
-    };
-
-    --layout-horizontal-reverse: {
-      @apply(--layout);
-
-      -ms-flex-direction: row-reverse;
-      -webkit-flex-direction: row-reverse;
-      flex-direction: row-reverse;
-    };
-
-    --layout-vertical: {
-      @apply(--layout);
-
-      -ms-flex-direction: column;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-    };
-
-    --layout-vertical-reverse: {
-      @apply(--layout);
-
-      -ms-flex-direction: column-reverse;
-      -webkit-flex-direction: column-reverse;
-      flex-direction: column-reverse;
-    };
-
-    --layout-wrap: {
-      -ms-flex-wrap: wrap;
-      -webkit-flex-wrap: wrap;
-      flex-wrap: wrap;
-    };
-
-    --layout-wrap-reverse: {
-      -ms-flex-wrap: wrap-reverse;
-      -webkit-flex-wrap: wrap-reverse;
-      flex-wrap: wrap-reverse;
-    };
-
-    --layout-flex-auto: {
-      -ms-flex: 1 1 auto;
-      -webkit-flex: 1 1 auto;
-      flex: 1 1 auto;
-    };
-
-    --layout-flex-none: {
-      -ms-flex: none;
-      -webkit-flex: none;
-      flex: none;
-    };
-
-    --layout-flex: {
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    };
-
-    --layout-flex-2: {
-      -ms-flex: 2;
-      -webkit-flex: 2;
-      flex: 2;
-    };
-
-    --layout-flex-3: {
-      -ms-flex: 3;
-      -webkit-flex: 3;
-      flex: 3;
-    };
-
-    --layout-flex-4: {
-      -ms-flex: 4;
-      -webkit-flex: 4;
-      flex: 4;
-    };
-
-    --layout-flex-5: {
-      -ms-flex: 5;
-      -webkit-flex: 5;
-      flex: 5;
-    };
-
-    --layout-flex-6: {
-      -ms-flex: 6;
-      -webkit-flex: 6;
-      flex: 6;
-    };
-
-    --layout-flex-7: {
-      -ms-flex: 7;
-      -webkit-flex: 7;
-      flex: 7;
-    };
-
-    --layout-flex-8: {
-      -ms-flex: 8;
-      -webkit-flex: 8;
-      flex: 8;
-    };
-
-    --layout-flex-9: {
-      -ms-flex: 9;
-      -webkit-flex: 9;
-      flex: 9;
-    };
-
-    --layout-flex-10: {
-      -ms-flex: 10;
-      -webkit-flex: 10;
-      flex: 10;
-    };
-
-    --layout-flex-11: {
-      -ms-flex: 11;
-      -webkit-flex: 11;
-      flex: 11;
-    };
-
-    --layout-flex-12: {
-      -ms-flex: 12;
-      -webkit-flex: 12;
-      flex: 12;
-    };
-
-    /* alignment in cross axis */
-
-    --layout-start: {
-      -ms-flex-align: start;
-      -webkit-align-items: flex-start;
-      align-items: flex-start;
-    };
-
-    --layout-center: {
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-    };
-
-    --layout-end: {
-      -ms-flex-align: end;
-      -webkit-align-items: flex-end;
-      align-items: flex-end;
-    };
-
-    --layout-baseline: {
-      -ms-flex-align: baseline;
-      -webkit-align-items: baseline;
-      align-items: baseline;
-    };
-
-    /* alignment in main axis */
-
-    --layout-start-justified: {
-      -ms-flex-pack: start;
-      -webkit-justify-content: flex-start;
-      justify-content: flex-start;
-    };
-
-    --layout-center-justified: {
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
-
-    --layout-end-justified: {
-      -ms-flex-pack: end;
-      -webkit-justify-content: flex-end;
-      justify-content: flex-end;
-    };
-
-    --layout-around-justified: {
-      -ms-flex-pack: distribute;
-      -webkit-justify-content: space-around;
-      justify-content: space-around;
-    };
-
-    --layout-justified: {
-      -ms-flex-pack: justify;
-      -webkit-justify-content: space-between;
-      justify-content: space-between;
-    };
-
-    --layout-center-center: {
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-    };
-
-    /* self alignment */
-
-    --layout-self-start: {
-      -ms-align-self: flex-start;
-      -webkit-align-self: flex-start;
-      align-self: flex-start;
-    };
-
-    --layout-self-center: {
-      -ms-align-self: center;
-      -webkit-align-self: center;
-      align-self: center;
-    };
-
-    --layout-self-end: {
-      -ms-align-self: flex-end;
-      -webkit-align-self: flex-end;
-      align-self: flex-end;
-    };
-
-    --layout-self-stretch: {
-      -ms-align-self: stretch;
-      -webkit-align-self: stretch;
-      align-self: stretch;
-    };
-
-    --layout-self-baseline: {
-      -ms-align-self: baseline;
-      -webkit-align-self: baseline;
-      align-self: baseline;
-    };
-
-    /* multi-line alignment in main axis */
-
-    --layout-start-aligned: {
-      -ms-flex-line-pack: start;  /* IE10 */
-      -ms-align-content: flex-start;
-      -webkit-align-content: flex-start;
-      align-content: flex-start;
-    };
-
-    --layout-end-aligned: {
-      -ms-flex-line-pack: end;  /* IE10 */
-      -ms-align-content: flex-end;
-      -webkit-align-content: flex-end;
-      align-content: flex-end;
-    };
-
-    --layout-center-aligned: {
-      -ms-flex-line-pack: center;  /* IE10 */
-      -ms-align-content: center;
-      -webkit-align-content: center;
-      align-content: center;
-    };
-
-    --layout-between-aligned: {
-      -ms-flex-line-pack: justify;  /* IE10 */
-      -ms-align-content: space-between;
-      -webkit-align-content: space-between;
-      align-content: space-between;
-    };
-
-    --layout-around-aligned: {
-      -ms-flex-line-pack: distribute;  /* IE10 */
-      -ms-align-content: space-around;
-      -webkit-align-content: space-around;
-      align-content: space-around;
-    };
-
-    /*******************************
+        <style is="custom-style">
+             :root {
+                --layout: {
+                    display: -ms-flexbox;
+                    display: -webkit-flex;
+                    display: flex;
+                }
+                ;
+                --layout-inline: {
+                    display: -ms-inline-flexbox;
+                    display: -webkit-inline-flex;
+                    display: inline-flex;
+                }
+                ;
+                --layout-horizontal: {
+                    @apply(--layout);
+                    -ms-flex-direction: row;
+                    -webkit-flex-direction: row;
+                    flex-direction: row;
+                }
+                ;
+                --layout-horizontal-reverse: {
+                    @apply(--layout);
+                    -ms-flex-direction: row-reverse;
+                    -webkit-flex-direction: row-reverse;
+                    flex-direction: row-reverse;
+                }
+                ;
+                --layout-vertical: {
+                    @apply(--layout);
+                    -ms-flex-direction: column;
+                    -webkit-flex-direction: column;
+                    flex-direction: column;
+                }
+                ;
+                --layout-vertical-reverse: {
+                    @apply(--layout);
+                    -ms-flex-direction: column-reverse;
+                    -webkit-flex-direction: column-reverse;
+                    flex-direction: column-reverse;
+                }
+                ;
+                --layout-wrap: {
+                    -ms-flex-wrap: wrap;
+                    -webkit-flex-wrap: wrap;
+                    flex-wrap: wrap;
+                }
+                ;
+                --layout-wrap-reverse: {
+                    -ms-flex-wrap: wrap-reverse;
+                    -webkit-flex-wrap: wrap-reverse;
+                    flex-wrap: wrap-reverse;
+                }
+                ;
+                --layout-flex-auto: {
+                    -ms-flex: 1 1 auto;
+                    -webkit-flex: 1 1 auto;
+                    flex: 1 1 auto;
+                }
+                ;
+                --layout-flex-none: {
+                    -ms-flex: none;
+                    -webkit-flex: none;
+                    flex: none;
+                }
+                ;
+                --layout-flex: {
+                    -ms-flex: 1 1 0.000000001px;
+                    -webkit-flex: 1;
+                    flex: 1;
+                    -webkit-flex-basis: 0.000000001px;
+                    flex-basis: 0.000000001px;
+                }
+                ;
+                --layout-flex-2: {
+                    -ms-flex: 2;
+                    -webkit-flex: 2;
+                    flex: 2;
+                }
+                ;
+                --layout-flex-3: {
+                    -ms-flex: 3;
+                    -webkit-flex: 3;
+                    flex: 3;
+                }
+                ;
+                --layout-flex-4: {
+                    -ms-flex: 4;
+                    -webkit-flex: 4;
+                    flex: 4;
+                }
+                ;
+                --layout-flex-5: {
+                    -ms-flex: 5;
+                    -webkit-flex: 5;
+                    flex: 5;
+                }
+                ;
+                --layout-flex-6: {
+                    -ms-flex: 6;
+                    -webkit-flex: 6;
+                    flex: 6;
+                }
+                ;
+                --layout-flex-7: {
+                    -ms-flex: 7;
+                    -webkit-flex: 7;
+                    flex: 7;
+                }
+                ;
+                --layout-flex-8: {
+                    -ms-flex: 8;
+                    -webkit-flex: 8;
+                    flex: 8;
+                }
+                ;
+                --layout-flex-9: {
+                    -ms-flex: 9;
+                    -webkit-flex: 9;
+                    flex: 9;
+                }
+                ;
+                --layout-flex-10: {
+                    -ms-flex: 10;
+                    -webkit-flex: 10;
+                    flex: 10;
+                }
+                ;
+                --layout-flex-11: {
+                    -ms-flex: 11;
+                    -webkit-flex: 11;
+                    flex: 11;
+                }
+                ;
+                --layout-flex-12: {
+                    -ms-flex: 12;
+                    -webkit-flex: 12;
+                    flex: 12;
+                }
+                ;
+                /* alignment in cross axis */
+                --layout-start: {
+                    -ms-flex-align: start;
+                    -webkit-align-items: flex-start;
+                    align-items: flex-start;
+                }
+                ;
+                --layout-center: {
+                    -ms-flex-align: center;
+                    -webkit-align-items: center;
+                    align-items: center;
+                }
+                ;
+                --layout-end: {
+                    -ms-flex-align: end;
+                    -webkit-align-items: flex-end;
+                    align-items: flex-end;
+                }
+                ;
+                --layout-baseline: {
+                    -ms-flex-align: baseline;
+                    -webkit-align-items: baseline;
+                    align-items: baseline;
+                }
+                ;
+                /* alignment in main axis */
+                --layout-start-justified: {
+                    -ms-flex-pack: start;
+                    -webkit-justify-content: flex-start;
+                    justify-content: flex-start;
+                }
+                ;
+                --layout-center-justified: {
+                    -ms-flex-pack: center;
+                    -webkit-justify-content: center;
+                    justify-content: center;
+                }
+                ;
+                --layout-end-justified: {
+                    -ms-flex-pack: end;
+                    -webkit-justify-content: flex-end;
+                    justify-content: flex-end;
+                }
+                ;
+                --layout-around-justified: {
+                    -ms-flex-pack: distribute;
+                    -webkit-justify-content: space-around;
+                    justify-content: space-around;
+                }
+                ;
+                --layout-justified: {
+                    -ms-flex-pack: justify;
+                    -webkit-justify-content: space-between;
+                    justify-content: space-between;
+                }
+                ;
+                --layout-center-center: {
+                    @apply(--layout-center);
+                    @apply(--layout-center-justified);
+                }
+                ;
+                /* self alignment */
+                --layout-self-start: {
+                    -ms-align-self: flex-start;
+                    -webkit-align-self: flex-start;
+                    align-self: flex-start;
+                }
+                ;
+                --layout-self-center: {
+                    -ms-align-self: center;
+                    -webkit-align-self: center;
+                    align-self: center;
+                }
+                ;
+                --layout-self-end: {
+                    -ms-align-self: flex-end;
+                    -webkit-align-self: flex-end;
+                    align-self: flex-end;
+                }
+                ;
+                --layout-self-stretch: {
+                    -ms-align-self: stretch;
+                    -webkit-align-self: stretch;
+                    align-self: stretch;
+                }
+                ;
+                --layout-self-baseline: {
+                    -ms-align-self: baseline;
+                    -webkit-align-self: baseline;
+                    align-self: baseline;
+                }
+                ;
+                /* multi-line alignment in main axis */
+                --layout-start-aligned: {
+                    -ms-flex-line-pack: start;
+                    /* IE10 */
+                    -ms-align-content: flex-start;
+                    -webkit-align-content: flex-start;
+                    align-content: flex-start;
+                }
+                ;
+                --layout-end-aligned: {
+                    -ms-flex-line-pack: end;
+                    /* IE10 */
+                    -ms-align-content: flex-end;
+                    -webkit-align-content: flex-end;
+                    align-content: flex-end;
+                }
+                ;
+                --layout-center-aligned: {
+                    -ms-flex-line-pack: center;
+                    /* IE10 */
+                    -ms-align-content: center;
+                    -webkit-align-content: center;
+                    align-content: center;
+                }
+                ;
+                --layout-between-aligned: {
+                    -ms-flex-line-pack: justify;
+                    /* IE10 */
+                    -ms-align-content: space-between;
+                    -webkit-align-content: space-between;
+                    align-content: space-between;
+                }
+                ;
+                --layout-around-aligned: {
+                    -ms-flex-line-pack: distribute;
+                    /* IE10 */
+                    -ms-align-content: space-around;
+                    -webkit-align-content: space-around;
+                    align-content: space-around;
+                }
+                ;
+                /*******************************
               Other Layout
     *******************************/
-
-    --layout-block: {
-      display: block;
-    };
-
-    --layout-invisible: {
-      visibility: hidden !important;
-    };
-
-    --layout-relative: {
-      position: relative;
-    };
-
-    --layout-fit: {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-scroll: {
-      -webkit-overflow-scrolling: touch;
-      overflow: auto;
-    };
-
-    --layout-fullbleed: {
-      margin: 0;
-      height: 100vh;
-    };
-
-    /* fixed position */
-
-    --layout-fixed-top: {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-    };
-
-    --layout-fixed-right: {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    };
-
-    --layout-fixed-bottom: {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-fixed-left: {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-  }
-
-</style>
+                --layout-block: {
+                    display: block;
+                }
+                ;
+                --layout-invisible: {
+                    visibility: hidden !important;
+                }
+                ;
+                --layout-relative: {
+                    position: relative;
+                }
+                ;
+                --layout-fit: {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                }
+                ;
+                --layout-scroll: {
+                    -webkit-overflow-scrolling: touch;
+                    overflow: auto;
+                }
+                ;
+                --layout-fullbleed: {
+                    margin: 0;
+                    height: 100vh;
+                }
+                ;
+                /* fixed position */
+                --layout-fixed-top: {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                }
+                ;
+                --layout-fixed-right: {
+                    position: fixed;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                }
+                ;
+                --layout-fixed-bottom: {
+                    position: fixed;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                }
+                ;
+                --layout-fixed-left: {
+                    position: fixed;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                }
+                ;
+            }
+        </style>
 
 
-<dom-module id="paper-radio-button" assetpath="../bower_components/paper-radio-button/">
-  <template strip-whitespace="">
+        <dom-module id="paper-radio-button" assetpath="../bower_components/paper-radio-button/">
+            <template strip-whitespace="">
     <style>
       :host {
         display: inline-block;
@@ -947,9 +917,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div id="radioLabel"><content></content></div>
   </template>
 
-  </dom-module>
-<dom-module id="paper-radio-group" assetpath="../bower_components/paper-radio-group/">
-  <template>
+        </dom-module>
+        <dom-module id="paper-radio-group" assetpath="../bower_components/paper-radio-group/">
+            <template>
     <style>
       :host {
         display: inline-block;
@@ -962,10 +932,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <content id="items" select="*"></content>
   </template>
-</dom-module>
+        </dom-module>
 
-<dom-module id="shared-style" assetpath="../bower_components/google-codelab-elements/">
-  <template>
+        <dom-module id="shared-style" assetpath="../bower_components/google-codelab-elements/">
+            <template>
     <style>
       /* Theming - Custom CSS  properties */
       :root {
@@ -975,10 +945,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
+        </dom-module>
 
-<dom-module id="google-codelab-survey" assetpath="../bower_components/google-codelab-elements/">
-  <template strip-whitespace="">
+        <dom-module id="google-codelab-survey" assetpath="../bower_components/google-codelab-elements/">
+            <template strip-whitespace="">
     <style include="shared-style">
       :host {
         display: block;
@@ -1008,9 +978,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-localstorage>
     <div class="survey"><content></content></div>
   </template>
-  </dom-module>
-<dom-module id="step-style" assetpath="../bower_components/google-codelab-elements/">
-  <template>
+        </dom-module>
+        <dom-module id="step-style" assetpath="../bower_components/google-codelab-elements/">
+            <template>
     <style>
       :host {
         --google-codelab-step-note: {};
@@ -1261,10 +1231,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro">
-<dom-module id="syntax-style" assetpath="../bower_components/google-codelab-elements/">
-  <template>
+        </dom-module>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro">
+        <dom-module id="syntax-style" assetpath="../bower_components/google-codelab-elements/">
+            <template>
     <style>
       ::content pre, ::content code {
         font-family: 'Source Code Pro', Helvetica, Arial;
@@ -1311,12 +1281,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ::content pre .dec, ::content code .dec { color: #3387CC; } /* decimal - blue */
     </style>
   </template>
-</dom-module>
-<script src="../bower_components/google-prettify/src/prettify.js"></script>
+        </dom-module>
+        <script src="../bower_components/google-prettify/src/prettify.js"></script>
 
 
-<dom-module id="google-codelab-step" assetpath="../bower_components/google-codelab-elements/">
-  <template strip-whitespace="">
+        <dom-module id="google-codelab-step" assetpath="../bower_components/google-codelab-elements/">
+            <template strip-whitespace="">
     <style include="shared-style"></style>
     <style include="step-style"></style>
     <style include="syntax-style"></style>
@@ -1328,11 +1298,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
     </div>
   </template>
-  </dom-module>
+        </dom-module>
 
 
-<dom-module id="iron-icon" assetpath="../bower_components/iron-icon/">
-  <template>
+        <dom-module id="iron-icon" assetpath="../bower_components/iron-icon/">
+            <template>
     <style>
       :host {
         @apply(--layout-inline);
@@ -1351,9 +1321,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </template>
 
-  </dom-module>
-<iron-iconset-svg name="icons" size="24">
-<svg><defs>
+        </dom-module>
+        <iron-iconset-svg name="icons" size="24">
+            <svg><defs>
 <g id="3d-rotation"><path d="M7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32zm.89-6.52c-.19 0-.37-.03-.52-.08-.16-.06-.29-.13-.4-.24-.11-.1-.2-.22-.26-.37-.06-.14-.09-.3-.09-.47h-1.3c0 .36.07.68.21.95.14.27.33.5.56.69.24.18.51.32.82.41.3.1.62.15.96.15.37 0 .72-.05 1.03-.15.32-.1.6-.25.83-.44s.42-.43.55-.72c.13-.29.2-.61.2-.97 0-.19-.02-.38-.07-.56-.05-.18-.12-.35-.23-.51-.1-.16-.24-.3-.4-.43-.17-.13-.37-.23-.61-.31.2-.09.37-.2.52-.33.15-.13.27-.27.37-.42.1-.15.17-.3.22-.46.05-.16.07-.32.07-.48 0-.36-.06-.68-.18-.96-.12-.28-.29-.51-.51-.69-.2-.19-.47-.33-.77-.43C9.1 8.05 8.76 8 8.39 8c-.36 0-.69.05-1 .16-.3.11-.57.26-.79.45-.21.19-.38.41-.51.67-.12.26-.18.54-.18.85h1.3c0-.17.03-.32.09-.45s.14-.25.25-.34c.11-.09.23-.17.38-.22.15-.05.3-.08.48-.08.4 0 .7.1.89.31.19.2.29.49.29.86 0 .18-.03.34-.08.49-.05.15-.14.27-.25.37-.11.1-.25.18-.41.24-.16.06-.36.09-.58.09H7.5v1.03h.77c.22 0 .42.02.6.07s.33.13.45.23c.12.11.22.24.29.4.07.16.1.35.1.57 0 .41-.12.72-.35.93-.23.23-.55.33-.95.33zm8.55-5.92c-.32-.33-.7-.59-1.14-.77-.43-.18-.92-.27-1.46-.27H12v8h2.3c.55 0 1.06-.09 1.51-.27.45-.18.84-.43 1.16-.76.32-.33.57-.73.74-1.19.17-.47.26-.99.26-1.57v-.4c0-.58-.09-1.1-.26-1.57-.18-.47-.43-.87-.75-1.2zm-.39 3.16c0 .42-.05.79-.14 1.13-.1.33-.24.62-.43.85-.19.23-.43.41-.71.53-.29.12-.62.18-.99.18h-.91V9.12h.97c.72 0 1.27.23 1.64.69.38.46.57 1.12.57 1.99v.4zM12 0l-.66.03 3.81 3.81 1.33-1.33c3.27 1.55 5.61 4.72 5.96 8.48h1.5C23.44 4.84 18.29 0 12 0z"></path></g>
 <g id="accessibility"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"></path></g>
 <g id="accessible"><circle cx="12" cy="4" r="2"></circle><path d="M19 13v-2c-1.54.02-3.09-.75-4.07-1.83l-1.29-1.43c-.17-.19-.38-.34-.61-.45-.01 0-.01-.01-.02-.01H13c-.35-.2-.75-.3-1.19-.26C10.76 7.11 10 8.04 10 9.09V15c0 1.1.9 2 2 2h5v5h2v-5.5c0-1.1-.9-2-2-2h-3v-3.45c1.29 1.07 3.25 1.94 5 1.95zm-6.17 5c-.41 1.16-1.52 2-2.83 2-1.66 0-3-1.34-3-3 0-1.31.84-2.41 2-2.83V12.1c-2.28.46-4 2.48-4 4.9 0 2.76 2.24 5 5 5 2.42 0 4.44-1.72 4.9-4h-2.07z"></path></g>
@@ -1654,9 +1624,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <g id="zoom-in"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm2.5-4h-2v2H9v-2H7V9h2V7h1v2h2v1z"></path></g>
 <g id="zoom-out"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"></path></g>
 </defs></svg>
-</iron-iconset-svg>
-<dom-module id="neon-animated-pages" assetpath="../bower_components/neon-animation/">
-  <template>
+        </iron-iconset-svg>
+        <dom-module id="neon-animated-pages" assetpath="../bower_components/neon-animation/">
+            <template>
     <style>
       :host {
         display: block;
@@ -1683,10 +1653,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <content id="content"></content>
   </template>
 
-</dom-module>
+        </dom-module>
 
-<dom-module id="paper-drawer-panel" assetpath="../bower_components/paper-drawer-panel/">
-  <template>
+        <dom-module id="paper-drawer-panel" assetpath="../bower_components/paper-drawer-panel/">
+            <template>
     <style>
       :host {
         display: block;
@@ -1855,11 +1825,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-selector>
   </template>
 
-  </dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-scroll-header-panel" assetpath="../bower_components/paper-scroll-header-panel/">
-  <template>
+        <dom-module id="paper-scroll-header-panel" assetpath="../bower_components/paper-scroll-header-panel/">
+            <template>
     <style>
       :host {
         display: block;
@@ -1936,170 +1906,152 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <content id="headerContent" select="paper-toolbar, .paper-header"></content>
     </div>
   </template>
-</dom-module>
+        </dom-module>
 
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
-<style is="custom-style">
-
-  :root {
-
-    /* Shared Styles */
-    --paper-font-common-base: {
-      font-family: 'Roboto', 'Noto', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    };
-
-    --paper-font-common-code: {
-      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
-      -webkit-font-smoothing: antialiased;
-    };
-
-    --paper-font-common-expensive-kerning: {
-      text-rendering: optimizeLegibility;
-    };
-
-    --paper-font-common-nowrap: {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    };
-
-    /* Material Font Styles */
-
-    --paper-font-display4: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 112px;
-      font-weight: 300;
-      letter-spacing: -.044em;
-      line-height: 120px;
-    };
-
-    --paper-font-display3: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 56px;
-      font-weight: 400;
-      letter-spacing: -.026em;
-      line-height: 60px;
-    };
-
-    --paper-font-display2: {
-      @apply(--paper-font-common-base);
-
-      font-size: 45px;
-      font-weight: 400;
-      letter-spacing: -.018em;
-      line-height: 48px;
-    };
-
-    --paper-font-display1: {
-      @apply(--paper-font-common-base);
-
-      font-size: 34px;
-      font-weight: 400;
-      letter-spacing: -.01em;
-      line-height: 40px;
-    };
-
-    --paper-font-headline: {
-      @apply(--paper-font-common-base);
-
-      font-size: 24px;
-      font-weight: 400;
-      letter-spacing: -.012em;
-      line-height: 32px;
-    };
-
-    --paper-font-title: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 20px;
-      font-weight: 500;
-      line-height: 28px;
-    };
-
-    --paper-font-subhead: {
-      @apply(--paper-font-common-base);
-
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 24px;
-    };
-
-    --paper-font-body2: {
-      @apply(--paper-font-common-base);
-
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 24px;
-    };
-
-    --paper-font-body1: {
-      @apply(--paper-font-common-base);
-
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 20px;
-    };
-
-    --paper-font-caption: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 12px;
-      font-weight: 400;
-      letter-spacing: 0.011em;
-      line-height: 20px;
-    };
-
-    --paper-font-menu: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 24px;
-    };
-
-    --paper-font-button: {
-      @apply(--paper-font-common-base);
-      @apply(--paper-font-common-nowrap);
-
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.018em;
-      line-height: 24px;
-      text-transform: uppercase;
-    };
-
-    --paper-font-code2: {
-      @apply(--paper-font-common-code);
-
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 20px;
-    };
-
-    --paper-font-code1: {
-      @apply(--paper-font-common-code);
-
-      font-size: 14px;
-      font-weight: 500;
-      line-height: 20px;
-    };
-
-  }
-
-</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
+        <style is="custom-style">
+             :root {
+                /* Shared Styles */
+                --paper-font-common-base: {
+                    font-family: 'Roboto', 'Noto', sans-serif;
+                    -webkit-font-smoothing: antialiased;
+                }
+                ;
+                --paper-font-common-code: {
+                    font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
+                    -webkit-font-smoothing: antialiased;
+                }
+                ;
+                --paper-font-common-expensive-kerning: {
+                    text-rendering: optimizeLegibility;
+                }
+                ;
+                --paper-font-common-nowrap: {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                ;
+                /* Material Font Styles */
+                --paper-font-display4: {
+                    @apply(--paper-font-common-base);
+                    @apply(--paper-font-common-nowrap);
+                    font-size: 112px;
+                    font-weight: 300;
+                    letter-spacing: -.044em;
+                    line-height: 120px;
+                }
+                ;
+                --paper-font-display3: {
+                    @apply(--paper-font-common-base);
+                    @apply(--paper-font-common-nowrap);
+                    font-size: 56px;
+                    font-weight: 400;
+                    letter-spacing: -.026em;
+                    line-height: 60px;
+                }
+                ;
+                --paper-font-display2: {
+                    @apply(--paper-font-common-base);
+                    font-size: 45px;
+                    font-weight: 400;
+                    letter-spacing: -.018em;
+                    line-height: 48px;
+                }
+                ;
+                --paper-font-display1: {
+                    @apply(--paper-font-common-base);
+                    font-size: 34px;
+                    font-weight: 400;
+                    letter-spacing: -.01em;
+                    line-height: 40px;
+                }
+                ;
+                --paper-font-headline: {
+                    @apply(--paper-font-common-base);
+                    font-size: 24px;
+                    font-weight: 400;
+                    letter-spacing: -.012em;
+                    line-height: 32px;
+                }
+                ;
+                --paper-font-title: {
+                    @apply(--paper-font-common-base);
+                    @apply(--paper-font-common-nowrap);
+                    font-size: 20px;
+                    font-weight: 500;
+                    line-height: 28px;
+                }
+                ;
+                --paper-font-subhead: {
+                    @apply(--paper-font-common-base);
+                    font-size: 16px;
+                    font-weight: 400;
+                    line-height: 24px;
+                }
+                ;
+                --paper-font-body2: {
+                    @apply(--paper-font-common-base);
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 24px;
+                }
+                ;
+                --paper-font-body1: {
+                    @apply(--paper-font-common-base);
+                    font-size: 14px;
+                    font-weight: 400;
+                    line-height: 20px;
+                }
+                ;
+                --paper-font-caption: {
+                    @apply(--paper-font-common-base);
+                    @apply(--paper-font-common-nowrap);
+                    font-size: 12px;
+                    font-weight: 400;
+                    letter-spacing: 0.011em;
+                    line-height: 20px;
+                }
+                ;
+                --paper-font-menu: {
+                    @apply(--paper-font-common-base);
+                    @apply(--paper-font-common-nowrap);
+                    font-size: 13px;
+                    font-weight: 500;
+                    line-height: 24px;
+                }
+                ;
+                --paper-font-button: {
+                    @apply(--paper-font-common-base);
+                    @apply(--paper-font-common-nowrap);
+                    font-size: 14px;
+                    font-weight: 500;
+                    letter-spacing: 0.018em;
+                    line-height: 24px;
+                    text-transform: uppercase;
+                }
+                ;
+                --paper-font-code2: {
+                    @apply(--paper-font-common-code);
+                    font-size: 14px;
+                    font-weight: 700;
+                    line-height: 20px;
+                }
+                ;
+                --paper-font-code1: {
+                    @apply(--paper-font-common-code);
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 20px;
+                }
+                ;
+            }
+        </style>
 
 
-<dom-module id="paper-toolbar" assetpath="../bower_components/paper-toolbar/">
-  <template>
+        <dom-module id="paper-toolbar" assetpath="../bower_components/paper-toolbar/">
+            <template>
     <style>
       :host {
         --calculated-paper-toolbar-height: var(--paper-toolbar-height, 64px);
@@ -2285,73 +2237,54 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
 
-  </dom-module>
-<style is="custom-style">
-
-  :root {
-
-    --shadow-transition: {
-      transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    };
-
-    --shadow-none: {
-      box-shadow: none;
-    };
-
-    /* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
-
-    --shadow-elevation-2dp: {
-      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 5px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    };
-
-    --shadow-elevation-3dp: {
-      box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 8px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 3px -2px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-4dp: {
-      box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 10px 0 rgba(0, 0, 0, 0.12),
-                  0 2px 4px -1px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-6dp: {
-      box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 18px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 5px -1px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-8dp: {
-      box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
-                  0 3px 14px 2px rgba(0, 0, 0, 0.12),
-                  0 5px 5px -3px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-12dp: {
-      box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14),
-                  0 4px 22px 3px rgba(0, 0, 0, 0.12),
-                  0 6px 7px -4px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-16dp: {
-      box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
-                  0  6px 30px 5px rgba(0, 0, 0, 0.12),
-                  0  8px 10px -5px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-24dp: {
-      box-shadow: 0 24px 38px 3px rgba(0, 0, 0, 0.14),
-                  0 9px 46px 8px rgba(0, 0, 0, 0.12),
-                  0 11px 15px -7px rgba(0, 0, 0, 0.4);
-    };
-  }
-
-</style>
-<dom-module id="paper-material-shared-styles" assetpath="../bower_components/paper-material/">
-  <template>
+        </dom-module>
+        <style is="custom-style">
+             :root {
+                --shadow-transition: {
+                    transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                ;
+                --shadow-none: {
+                    box-shadow: none;
+                }
+                ;
+                /* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
+                --shadow-elevation-2dp: {
+                    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+                }
+                ;
+                --shadow-elevation-3dp: {
+                    box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 1px 8px 0 rgba(0, 0, 0, 0.12), 0 3px 3px -2px rgba(0, 0, 0, 0.4);
+                }
+                ;
+                --shadow-elevation-4dp: {
+                    box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+                }
+                ;
+                --shadow-elevation-6dp: {
+                    box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
+                }
+                ;
+                --shadow-elevation-8dp: {
+                    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+                }
+                ;
+                --shadow-elevation-12dp: {
+                    box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14), 0 4px 22px 3px rgba(0, 0, 0, 0.12), 0 6px 7px -4px rgba(0, 0, 0, 0.4);
+                }
+                ;
+                --shadow-elevation-16dp: {
+                    box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+                }
+                ;
+                --shadow-elevation-24dp: {
+                    box-shadow: 0 24px 38px 3px rgba(0, 0, 0, 0.14), 0 9px 46px 8px rgba(0, 0, 0, 0.12), 0 11px 15px -7px rgba(0, 0, 0, 0.4);
+                }
+                ;
+            }
+        </style>
+        <dom-module id="paper-material-shared-styles" assetpath="../bower_components/paper-material/">
+            <template>
     <style>
       :host {
         display: block;
@@ -2379,11 +2312,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-button" assetpath="../bower_components/paper-button/">
-  <template strip-whitespace="">
+        <dom-module id="paper-button" assetpath="../bower_components/paper-button/">
+            <template strip-whitespace="">
     <style include="paper-material-shared-styles">
       :host {
         @apply(--layout-inline);
@@ -2446,10 +2379,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <content></content>
   </template>
 
-  </dom-module>
-<dom-module id="iron-overlay-backdrop" assetpath="../bower_components/iron-overlay-behavior/">
+        </dom-module>
+        <dom-module id="iron-overlay-backdrop" assetpath="../bower_components/iron-overlay-behavior/">
 
-  <template>
+            <template>
     <style>
       :host {
         position: fixed;
@@ -2474,10 +2407,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <content></content>
   </template>
 
-</dom-module>
+        </dom-module>
 
-<dom-module id="paper-dialog-shared-styles" assetpath="../bower_components/paper-dialog-behavior/">
-  <template>
+        <dom-module id="paper-dialog-shared-styles" assetpath="../bower_components/paper-dialog-behavior/">
+            <template>
     <style>
       :host {
         display: block;
@@ -2528,18 +2461,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-dialog" assetpath="../bower_components/paper-dialog/">
-  <template>
+        <dom-module id="paper-dialog" assetpath="../bower_components/paper-dialog/">
+            <template>
     <style include="paper-dialog-shared-styles"></style>
     <content></content>
   </template>
-</dom-module>
+        </dom-module>
 
-<dom-module id="paper-fab" assetpath="../bower_components/paper-fab/">
-  <template strip-whitespace="">
+        <dom-module id="paper-fab" assetpath="../bower_components/paper-fab/">
+            <template strip-whitespace="">
     <style include="paper-material-shared-styles">
       :host {
         @apply(--layout-vertical);
@@ -2611,11 +2544,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <span hidden$="{{_computeIsIconFab(icon, src)}}">{{label}}</span>
   </template>
 
-  </dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-icon-button" assetpath="../bower_components/paper-icon-button/">
-  <template strip-whitespace="">
+        <dom-module id="paper-icon-button" assetpath="../bower_components/paper-icon-button/">
+            <template strip-whitespace="">
     <style>
       :host {
         display: inline-block;
@@ -2669,9 +2602,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
   </template>
 
-  </dom-module>
-<dom-module id="paper-menu-shared-styles" assetpath="../bower_components/paper-menu/">
-  <template>
+        </dom-module>
+        <dom-module id="paper-menu-shared-styles" assetpath="../bower_components/paper-menu/">
+            <template>
     <style>
       /* need a wrapper element to make this higher specificity than the :host rule in paper-item */
       .selectable-content > ::content > .iron-selected {
@@ -2706,11 +2639,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-menu" assetpath="../bower_components/paper-menu/">
-  <template>
+        <dom-module id="paper-menu" assetpath="../bower_components/paper-menu/">
+            <template>
     <style include="paper-menu-shared-styles"></style>
     <style>
       :host {
@@ -2729,11 +2662,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
 
-  </dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-item-shared-styles" assetpath="../bower_components/paper-item/">
-  <template>
+        <dom-module id="paper-item-shared-styles" assetpath="../bower_components/paper-item/">
+            <template>
     <style>
       :host, .paper-item {
         display: block;
@@ -2786,11 +2719,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
+        </dom-module>
 
 
-<dom-module id="paper-item" assetpath="../bower_components/paper-item/">
-  <template>
+        <dom-module id="paper-item" assetpath="../bower_components/paper-item/">
+            <template>
     <style include="paper-item-shared-styles"></style>
     <style>
       :host {
@@ -2805,9 +2738,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <content></content>
   </template>
 
-  </dom-module>
-<dom-module id="layout-style" assetpath="../bower_components/google-codelab-elements/">
-  <template>
+        </dom-module>
+        <dom-module id="layout-style" assetpath="../bower_components/google-codelab-elements/">
+            <template>
     <style>
       .layout {
         @apply(--layout);
@@ -2847,9 +2780,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
   </template>
-</dom-module>
-<dom-module id="codelab-style" assetpath="../bower_components/google-codelab-elements/">
-  <template strip-whitespace="">
+        </dom-module>
+        <dom-module id="codelab-style" assetpath="../bower_components/google-codelab-elements/">
+            <template strip-whitespace="">
     <style>
 
 :host {
@@ -3063,9 +2996,9 @@ paper-fab {
 
     </style>
   </template>
-</dom-module>
-<dom-module id="google-codelab" assetpath="../bower_components/google-codelab-elements/">
-  <template strip-whitespace="">
+        </dom-module>
+        <dom-module id="google-codelab" assetpath="../bower_components/google-codelab-elements/">
+            <template strip-whitespace="">
     <style include="layout-style"></style>
     <style include="codelab-style"></style>
 
@@ -3085,134 +3018,134 @@ paper-fab {
               <i>{{item.step}}</i><span>{{item.label}}</span>
             </paper-item>
           </template>
-        </paper-menu>
+            </paper-menu>
 
-        <div id="metadata">
-          <template is="dom-if" if="{{feedbackLink}}" strip-whitespace="">
-            <div id="feedback">
-              Did you find a mistake?
-              <a target="_blank" href$="{{feedbackLink}}">Please file a bug</a>.
-            </div>
+            <div id="metadata">
+                <template is="dom-if" if="{{feedbackLink}}" strip-whitespace="">
+            
           </template>
 
-          <template is="dom-if" if="{{lastUpdated}}" strip-whitespace="">
+                <template is="dom-if" if="{{lastUpdated}}" strip-whitespace="">
             <div id="last-updated">Last updated on {{lastUpdated}}.</div>
           </template>
-        </div>
+            </div>
 
-      </div>
+    </div>
 
-      <paper-scroll-header-panel id="headerpanel" fixed="" main="">
+    <paper-scroll-header-panel id="headerpanel" fixed="" main="">
         <paper-toolbar hidden$="[[noToolbar]]">
-          <template is="dom-if" if="{{_narrow}}" strip-whitespace="">
+            <template is="dom-if" if="{{_narrow}}" strip-whitespace="">
             <paper-icon-button icon="menu" paper-drawer-toggle=""></paper-icon-button>
           </template>
-          <template is="dom-if" if="{{!_narrow}}" strip-whitespace="">
+            <template is="dom-if" if="{{!_narrow}}" strip-whitespace="">
             <paper-icon-button icon="arrow-back" on-tap="_goToHome"></paper-icon-button>
           </template>
-          <h1 class="title">{{title}}</h1>
-          <div title="Time remaining" hidden$="{{!_isPositiveNum(duration)}}" class="countdown layout horizontal">
-            <iron-icon icon="schedule"></iron-icon> <span>{{remaining}}</span>
-          </div>
+            <h1 class="title">{{title}}</h1>
+            <div title="Time remaining" hidden$="{{!_isPositiveNum(duration)}}" class="countdown layout horizontal">
+                <iron-icon icon="schedule"></iron-icon> <span>{{remaining}}</span>
+            </div>
         </paper-toolbar>
 
         <neon-animated-pages id="pages" selected="{{selected}}" on-iron-deselect="_onStepLeave" on-iron-items-changed="_onStepsChanged">
-          <content select="google-codelab-step"></content>
+            <content select="google-codelab-step"></content>
         </neon-animated-pages>
 
-      </paper-scroll-header-panel>
+    </paper-scroll-header-panel>
 
     </paper-drawer-panel>
 
     <footer id="controls" hidden$="[[noArrows]]" narrow$="[[_narrow]]">
-      <div class="fabs layout horizontal justified">
-        <paper-fab raised="" class="navbutton prevbutton" icon="chevron-left" on-tap="selectPrevious" title="Previous step" disabled$="{{_isFirstStep(selected)}}">
-        </paper-fab>
+        <div class="fabs layout horizontal justified">
+            <paper-fab raised="" class="navbutton prevbutton" icon="chevron-left" on-tap="selectPrevious" title="Previous step" disabled$="{{_isFirstStep(selected)}}">
+            </paper-fab>
 
-        <div>
-          <template is="dom-if" if="{{_showNextFab(selected, steps)}}" strip-whitespace="">
+            <div>
+                <template is="dom-if" if="{{_showNextFab(selected, steps)}}" strip-whitespace="">
             <paper-fab icon="chevron-right" raised="" class="navbutton nextbutton" title="{{_nextFabTitle(selected)}}" on-tap="selectNext">
             </paper-fab>
           </template>
 
-          <template is="dom-if" if="{{_showDoneFab(selected, steps)}}" strip-whitespace="">
+                <template is="dom-if" if="{{_showDoneFab(selected, steps)}}" strip-whitespace="">
             <paper-fab icon="done" raised="" class="navbutton donebutton" on-tap="_goToHome" title="Complete codelab">
             </paper-fab>
           </template>
+            </div>
         </div>
-      </div>
     </footer>
 
     <paper-dialog id="resumeDialog" modal="">
-      <h2>Would you like to resume where you left off?</h2>
-      <p>Step <span>{{_storedStep.step}}</span>: <span>{{_storedStep.label}}</span></p>
-      <div class="buttons">
-        <paper-button dialog-dismiss="" on-click="_stateInit">Cancel</paper-button>
-        <paper-button dialog-confirm="" on-click="_resume" autofocus="">Resume</paper-button>
-      </div>
+        <h2>Would you like to resume where you left off?</h2>
+        <p>Step <span>{{_storedStep.step}}</span>: <span>{{_storedStep.label}}</span></p>
+        <div class="buttons">
+            <paper-button dialog-dismiss="" on-click="_stateInit">Cancel</paper-button>
+            <paper-button dialog-confirm="" on-click="_resume" autofocus="">Resume</paper-button>
+        </div>
     </paper-dialog>
 
-  </template>
-  </dom-module>
-<dom-module id="google-youtube" assetpath="../bower_components/google-youtube/">
-  <style>
-    :host {
-      display: block;
-    }
+    </template>
+    </dom-module>
+    <dom-module id="google-youtube" assetpath="../bower_components/google-youtube/">
+        <style>
+             :host {
+                display: block;
+            }
+            
+             :host([fluid]) {
+                width: 100%;
+                max-width: 100%;
+                position: relative;
+            }
+            
+             :host([fluid]) iframe,
+             :host([fluid]) #thumbnail {
+                vertical-align: bottom;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                width: 100%;
+                height: 100%;
+            }
+            
+            iframe {
+                @apply(--google-youtube-iframe);
+            }
+            
+            #container {
+                max-width: 100%;
+                max-height: 100%;
+                @apply(--google-youtube-container);
+            }
+            
+            #thumbnail {
+                width: 100%;
+                height: 100%;
+                cursor: pointer;
+                @apply(--google-youtube-thumbnail);
+            }
+        </style>
 
-    :host([fluid]) {
-      width: 100%;
-      max-width: 100%;
-      position: relative;
-    }
-
-    :host([fluid]) iframe,
-    :host([fluid]) #thumbnail {
-      vertical-align: bottom;
-      position: absolute;
-      top: 0px;
-      left: 0px;
-      width: 100%;
-      height: 100%;
-    }
-    
-    iframe {
-      @apply(--google-youtube-iframe);
-    }
-
-    #container {
-      max-width: 100%;
-      max-height: 100%;
-      @apply(--google-youtube-container);
-    }
-
-    #thumbnail {
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-      @apply(--google-youtube-thumbnail);
-    }
-  </style>
-
-  <template>
+        <template>
     <div id="container" style$="{{_computeContainerStyle(width, height)}}">
       <template is="dom-if" if="{{thumbnail}}">
         <img id="thumbnail" src$="{{thumbnail}}" title="YouTube video thumbnail." alt="YouTube video thumbnail." on-tap="_handleThumbnailTap">
       </template>
 
-      <template is="dom-if" if="{{!thumbnail}}">
+        <template is="dom-if" if="{{!thumbnail}}">
         <template is="dom-if" if="{{videoId}}">
           <google-youtube-api on-api-load="_apiLoad"></google-youtube-api>
         </template>
-      </template>
+        </template>
 
-      
-      <iron-localstorage name="google-youtube-playsupported" value="{{_playsupportedLocalStorage}}" on-iron-localstorage-load="_useExistingPlaySupportedValue" on-iron-localstorage-load-empty="_determinePlaySupported">
-      </iron-localstorage>
 
-      <div id="player"></div>
+        <iron-localstorage name="google-youtube-playsupported" value="{{_playsupportedLocalStorage}}" on-iron-localstorage-load="_useExistingPlaySupportedValue" on-iron-localstorage-load-empty="_determinePlaySupported">
+        </iron-localstorage>
+
+        <div id="player"></div>
+        </div>
+        </template>
+    </dom-module>
+
     </div>
-  </template>
-</dom-module>
+</body>
 
-</div></body></html>
+</html>
