@@ -40,6 +40,22 @@
                 showInstructions("windows");
             }
         }
+        $(document).ready(function() {
+            $(function() {
+                $.each(document.images, function() {
+                    var that = this;
+                    var src = $(that).attr('src') || '';
+                    if (!src.length > 0) {
+                        var fsrc = $(that).attr('fsrc');
+                        var img = new Image();
+                        img.src = fsrc;
+                        $(img).load(function() {
+                            that.src = this.src;
+                        });
+                    }
+                });
+            });
+        });
     </script>
 </head>
 
